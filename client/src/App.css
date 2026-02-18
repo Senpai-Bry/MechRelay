@@ -1,10 +1,21 @@
+/* -------------------------------------------------- */
+/* TAILWIND DIRECTIVES                                 */
+/* -------------------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------- */
+/* ROOT WRAPPER FIX                                    */
+/* -------------------------------------------------- */
+/* Ensures full-width layout without Vite boilerplate */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
 }
 
+/* -------------------------------------------------- */
+/* LOGO HOVER EFFECTS                                  */
+/* -------------------------------------------------- */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -20,9 +31,9 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-/* ----------------------------- */
-/* MODAL ANIMATION               */
-/* ----------------------------- */
+/* -------------------------------------------------- */
+/* MODAL ANIMATION                                     */
+/* -------------------------------------------------- */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -38,9 +49,9 @@
   animation: modalFadeIn 0.25s ease-out forwards;
 }
 
-/* ----------------------------- */
-/* HERO SECTION ANIMATIONS       */
-/* ----------------------------- */
+/* -------------------------------------------------- */
+/* HERO SECTION ANIMATIONS                             */
+/* -------------------------------------------------- */
 @keyframes heroFadeUp {
   0% {
     opacity: 0;
@@ -69,9 +80,9 @@
   animation-delay: 0.45s;
 }
 
-/* ----------------------------- */
-/* BUTTON RIPPLE EFFECT          */
-/* ----------------------------- */
+/* -------------------------------------------------- */
+/* BUTTON RIPPLE EFFECT                                */
+/* -------------------------------------------------- */
 .button-ripple {
   position: relative;
   overflow: hidden;
@@ -90,9 +101,9 @@
   opacity: 1;
 }
 
-/* ----------------------------- */
-/* WHY CARD STYLING              */
-/* ----------------------------- */
+/* -------------------------------------------------- */
+/* WHY CARD STYLING                                    */
+/* -------------------------------------------------- */
 .why-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -121,15 +132,9 @@
   --card-border: rgba(255, 255, 255, 0.08);
 }
 
-/* ----------------------------- */
-/* DEFAULT VITE ANIMATIONS       */
-/* ----------------------------- */
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
+/* -------------------------------------------------- */
+/* OPTIONAL: REMOVE VITE DEFAULTS                      */
+/* -------------------------------------------------- */
 .card {
   padding: 2em;
 }
