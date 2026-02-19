@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { Search, HelpCircle, Camera } from 'lucide-react';
 import './App.css';
 import WhyMechRelay from "./pages/WhyMechRelay";
+import HowItWorks from "./pages/HowItWorks";
+import Community from "./pages/Community";
+import Post from "./pages/Post";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,6 +22,7 @@ export default function App() {
   const [searchError, setSearchError] = useState('');
   const [questionError, setQuestionError] = useState('');
   const [uploadError, setUploadError] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const toggleTheme = () => setDarkMode((prev) => !prev);
 
@@ -101,91 +105,142 @@ export default function App() {
     }
   };
 
+  const navItems = ['Home', 'How It Works', 'Community', 'About', 'Post', 'Login'];
+
+  const getPageKey = (item) => item.toLowerCase().replace(/\s+/g, '-');
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-500 ease-in-out">
 
       {/* NAVBAR */}
       <nav className="w-full bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
 
+          {/* Logo */}
           <img
             src={logo}
             alt="MechRelay Logo"
-            className="max-w-24 h-auto transition-all dark:brightness-125 dark:contrast-125 dark:drop-shadow-md"
+            className="max-w-20 h-auto transition-all dark:brightness-125 dark:contrast-125 dark:drop-shadow-md cursor-pointer"
+            onClick={() => setActivePage('home')}
           />
 
-          {/* Search (Desktop) */}
-          <div className="hidden md:flex flex-1 max-w-md items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
-            <Search className="w-4 h-4 text-gray-500 dark:text-gray-300" />
-            <input
-              type="text"
-              placeholder="Search issues, codes, or topics..."
-              className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-400"
-            />
-          </div>
-
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-8 text-gray-700 dark:text-gray-200 font-medium text-lg">
-            {['Home', 'Services', 'Mechanics', 'About', 'Login'].map((item) => (
+          <div className="hidden md:flex items-center space-x-6 text-gray-700 dark:text-gray-200 font-medium text-base">
+            {['Home', 'How It Works', 'Community', 'About'].map((item) => (
               <a
                 key={item}
                 href="#"
-                onClick={(e) => { e.preventDefault(); setActivePage(item.toLowerCase()); }}
-                className="relative group hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); }}
+                className={`relative group transition-colors ${
+                  activePage === getPageKey(item)
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'hover:text-blue-600 dark:hover:text-blue-400'
+                }`}
               >
-                <span>{item}</span>
+                {item}
                 <span className="pointer-events-none absolute left-0 -bottom-1 h-0.5 w-0 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </div>
 
-          {/* Dark Mode Toggle (Desktop) */}
-          <button
-            onClick={toggleTheme}
-            className="hidden md:flex items-center justify-center p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
+          {/* Right Side Actions */}
+          <div className="hidden md:flex items-center gap-3">
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
-            aria-label="Toggle menu"
-          >
-            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-          </button>
-        </div>
+            {/* Expandable Search */}
+            <div className={`flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 transition-all duration-300 ${searchOpen ? 'w-56' : 'w-10'}`}>
+        <button onClick={() => setSearchOpen((prev) => !prev)}>
+          <Search className="w-4 h-4 text-gray-500 dark:text-gray-300 shrink-0" />
+        </button>
+        {searchOpen && (
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search..."
+            onBlur={() => setSearchOpen(false)}
+            className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+          />
+        )}
+      </div>
+
+            {/* Post CTA */}
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); setActivePage('post'); }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
+            >
+              Post
+            </a>
+
+            {/* Login */}
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); setActivePage('login'); }}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm"
+            >
+              Login
+            </a>
+          </div>
+
+    {/* Mobile Right Side */}
+    <div className="md:hidden flex items-center gap-3">
+      {/* Dark Mode Toggle — mobile only shows here */}
+      <button
+        onClick={toggleTheme}
+        className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
+      >
+        {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
+
+      {/* Hamburger */}
+      <button
+        onClick={() => setMenuOpen((prev) => !prev)}
+        className="flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+        aria-label="Toggle menu"
+      >
+        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+      </button>
+    </div>
+  </div>
 
         {/* Mobile Menu Dropdown */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-3 text-gray-700 dark:text-gray-200 font-medium text-lg">
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-3 text-gray-700 dark:text-gray-200 font-medium">
+
+            {/* Mobile Search */}
             <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
               <Search className="w-4 h-4 text-gray-500 dark:text-gray-300" />
               <input
                 type="text"
                 placeholder="Search issues, codes, or topics..."
-                className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-400"
+                className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
               />
             </div>
-            {['Home', 'Services', 'Mechanics', 'About', 'Login'].map((item) => (
+
+            {/* Mobile Nav Links */}
+            {['Home', 'How It Works', 'Community', 'About', 'Post', 'Login'].map((item) => (
               <a
                 key={item}
                 href="#"
-                onClick={(e) => { e.preventDefault(); setActivePage(item.toLowerCase()); setMenuOpen(false); }}
-                className="block hover:text-blue-600 dark:hover:text-blue-400 transition"
+                onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); setMenuOpen(false); }}
+                className="block hover:text-blue-600 dark:hover:text-blue-400 transition py-1"
               >
                 {item}
               </a>
             ))}
-            <button
-              onClick={toggleTheme}
-              className="w-full flex items-center justify-center p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
-            >
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+
+            {/* Dark Mode Toggle — inside mobile menu on desktop */}
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
+              >
+                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+            </div>
+
           </div>
         </div>
       </nav>
@@ -198,24 +253,57 @@ export default function App() {
           <section className="bg-gradient-to-b from-blue-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 py-20 transition-colors">
             <div className="max-w-6xl mx-auto px-4 text-center">
               <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white hero-animate hero-delay-1">
-                Connecting You With Trusted Mechanics
+                The Shop in Your Pocket
               </h1>
               <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto hero-animate hero-delay-2">
-                MechRelay gives mechanics a fast, clear way to share problems,
-                photos, and real‑world advice — without digging through forums or
-                waiting on callbacks. It's like having a whole shop full of
-                experienced techs in your pocket.
+                MechRelay helps mechanics talk to each other quickly and clearly.
+                Share problems, photos, and real-world advice — dead threads, or endless scrolling
+              . Just fast answers from techs who've done the job.
               </p>
-              <button className="mt-8 px-8 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition button-ripple hero-animate hero-delay-3">
-                Get Started
-              </button>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center hero-animate hero-delay-3">
+                <button
+                  onClick={() => setActivePage('post')}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition button-ripple"
+                >
+                  Post a Question
+                </button>
+                <button
+                  onClick={() => setActivePage('how-it-works')}
+                  className="px-8 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                >
+                  See How It Works
+                </button>
+              </div>
             </div>
           </section>
         )}
 
+        {/* HOW IT WORKS PAGE */}
+        {activePage === 'how-it-works' && <HowItWorks />}
+
+        {/* COMMUNITY PAGE */}
+        {activePage === 'community' && <Community />}
+
         {/* ABOUT PAGE */}
-        {activePage === 'about' && (
-          <WhyMechRelay />
+        {activePage === 'about' && <WhyMechRelay />}
+
+        {/* POST PAGE */}
+        {activePage === 'post' && <Post />}
+
+        {/* LOGIN PAGE */}
+        {activePage === 'login' && (
+          <section className="py-20 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Sign In to MechRelay</h2>
+              <input type="email" placeholder="Email" className="w-full mb-4 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none" />
+              <input type="password" placeholder="Password" className="w-full mb-6 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none" />
+              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Sign In</button>
+              <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                Don't have an account?{' '}
+                <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">Sign up</a>
+              </p>
+            </div>
+          </section>
         )}
 
         {/* FLOATING ACTION BUTTON */}
