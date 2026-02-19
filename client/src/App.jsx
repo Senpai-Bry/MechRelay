@@ -3,6 +3,10 @@ import logo from './assets/Mech-Relay.png';
 import { useState, useEffect } from 'react';
 import { Search, HelpCircle, Camera } from 'lucide-react';
 import './App.css';
+import WhyMechRelay from "./pages/WhyMechRelay";
+
+<Route path="/why" element={<WhyMechRelay />} />
+
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
