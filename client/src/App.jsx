@@ -5,9 +5,6 @@ import { Search, HelpCircle, Camera } from 'lucide-react';
 import './App.css';
 import WhyMechRelay from "./pages/WhyMechRelay";
 
-<Route path="/why" element={<WhyMechRelay />} />
-
-
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -25,7 +22,6 @@ export default function App() {
 
   const toggleTheme = () => setDarkMode((prev) => !prev);
 
-  // Load saved theme
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -34,7 +30,6 @@ export default function App() {
     }
   }, []);
 
-  // Save theme + apply to <html>
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -45,7 +40,6 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
@@ -60,14 +54,8 @@ export default function App() {
   }, []);
 
   const handleSearchSubmit = async () => {
-    if (!searchText.trim()) {
-      setSearchError('Search cannot be empty.');
-      return;
-    }
-    if (searchText.length < 3) {
-      setSearchError('Search must be at least 3 characters.');
-      return;
-    }
+    if (!searchText.trim()) { setSearchError('Search cannot be empty.'); return; }
+    if (searchText.length < 3) { setSearchError('Search must be at least 3 characters.'); return; }
     try {
       await fetch('http://localhost:5000/api/search', {
         method: 'POST',
@@ -82,14 +70,8 @@ export default function App() {
   };
 
   const handleQuestionSubmit = async () => {
-    if (!questionText.trim()) {
-      setQuestionError('Question cannot be empty.');
-      return;
-    }
-    if (questionText.length < 10) {
-      setQuestionError('Please provide more detail (10+ characters).');
-      return;
-    }
+    if (!questionText.trim()) { setQuestionError('Question cannot be empty.'); return; }
+    if (questionText.length < 10) { setQuestionError('Please provide more detail (10+ characters).'); return; }
     try {
       await fetch('http://localhost:5000/api/question', {
         method: 'POST',
@@ -104,10 +86,7 @@ export default function App() {
   };
 
   const handleUploadSubmit = async () => {
-    if (!uploadFile) {
-      setUploadError('Please select an image.');
-      return;
-    }
+    if (!uploadFile) { setUploadError('Please select an image.'); return; }
     const formData = new FormData();
     formData.append('photo', uploadFile);
     try {
@@ -151,7 +130,7 @@ export default function App() {
               <a
                 key={item}
                 href="#"
-                onClick={() => setActivePage(item.toLowerCase())}
+                onClick={(e) => { e.preventDefault(); setActivePage(item.toLowerCase()); }}
                 className="relative group hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <span>{item}</span>
@@ -170,16 +149,17 @@ export default function App() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+            aria-label="Toggle menu"
           >
-            <span className={`block w-6 h-0.5 bg-gray-700 dark:bg-gray-200 transition-transform duration-300 ${menuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
-            <span className={`block w-6 h-0.5 bg-gray-700 dark:bg-gray-200 my-1 transition-opacity duration-300 ${menuOpen ? 'opacity-0' : 'opacity-100'}`} />
-            <span className={`block w-6 h-0.5 bg-gray-700 dark:bg-gray-200 transition-transform duration-300 ${menuOpen ? '-rotate-45 -translate-y-1.5' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-3 text-gray-700 dark:text-gray-200 font-medium text-lg">
             <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
@@ -194,7 +174,7 @@ export default function App() {
               <a
                 key={item}
                 href="#"
-                onClick={() => { setActivePage(item.toLowerCase()); setMenuOpen(false); }}
+                onClick={(e) => { e.preventDefault(); setActivePage(item.toLowerCase()); setMenuOpen(false); }}
                 className="block hover:text-blue-600 dark:hover:text-blue-400 transition"
               >
                 {item}
@@ -235,25 +215,7 @@ export default function App() {
 
         {/* ABOUT PAGE */}
         {activePage === 'about' && (
-          <section className="py-20 bg-gradient-to-b from-white/90 to-white dark:from-gray-900/90 dark:to-gray-900 transition-colors">
-            <div className="why-card">
-              <h2 className="text-4xl font-bold mb-6 text-gray-900 dark:text-white">
-                Why This App Exists
-              </h2>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                For 13 years, I worked as a mechanic...
-              </p>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-                Forums are slow. Facebook groups are chaotic...
-              </p>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-                MechRelay exists to fix that...
-              </p>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-                This app is built from real shop workflow...
-              </p>
-            </div>
-          </section>
+          <WhyMechRelay />
         )}
 
         {/* FLOATING ACTION BUTTON */}
