@@ -61,7 +61,6 @@ export default function WhyMechRelay() {
           Because no mechanic should have to figure it out alone.
         </p>
       </div>
-
     </div>
   );
 }

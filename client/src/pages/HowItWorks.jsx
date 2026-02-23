@@ -57,7 +57,6 @@ export default function HowItWorks() {
             </div>
           </div>
         ))}
-      </div>
 
       <div className="mt-12 p-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-md">
         <p className="text-gray-800 dark:text-gray-200 font-medium">
