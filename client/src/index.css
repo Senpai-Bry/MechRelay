@@ -4,3 +4,23 @@
 @tailwind components;
 /* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
+
+/* -------------------------------------------------- */
+/* GLOBAL BASE OVERRIDES                               */
+/* -------------------------------------------------- */
+html, body, #root {
+  background-color: #0F1923;
+  color: #F0EDE6;
+  min-height: 100%;
+  width: 100%;
+}
+
+
+
+
+
+
+
+
+
+

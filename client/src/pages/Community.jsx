@@ -26,51 +26,79 @@ const posts = [
 
 export default function Community() {
   return (
-    <div className="py-16 px-6 md:px-10 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-          Community
-        </h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition text-sm">
-          + New Post
-        </button>
-      </div>
-      <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-        Real questions from real mechanics. Jump in, share what you know.
-      </p>
+    <div className="min-h-screen bg-garage-bg">
 
-      <div className="space-y-4">
-        {posts.map((post, i) => (
-          <div
-            key={i}
-            className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                  {post.user[0]}
-                </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{post.user}</span>
-                <span className="text-xs text-gray-400">{post.time}</span>
-              </div>
-              <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full font-medium">
-                {post.tag}
-              </span>
-            </div>
-            <p className="text-gray-800 dark:text-gray-100 leading-relaxed mb-3">
-              {post.question}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {post.replies} replies
-            </p>
+      {/* PAGE HEADER */}
+      <section className="relative overflow-hidden py-20 text-center border-b border-garage-border">
+        <div className="absolute inset-0 hero-grid pointer-events-none" />
+        <div className="relative z-10 max-w-3xl mx-auto px-6">
+          <h1 className="font-condensed font-extrabold text-garage-text leading-none tracking-tight"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
+            The <span className="text-garage-gold">Community.</span>
+          </h1>
+          <p className="mt-4 text-garage-muted text-lg leading-relaxed max-w-xl mx-auto">
+            Real questions from real mechanics. Jump in, share what you know.
+          </p>
+        </div>
+      </section>
+
+      {/* POSTS */}
+      <div className="max-w-3xl mx-auto px-6 py-14">
+
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold">
+              Recent Posts
+            </span>
+            <div className="h-px w-24 bg-garage-border" />
           </div>
-        ))}
-      </div>
+          <button className="px-4 py-2 bg-garage-gold text-garage-bg font-condensed font-bold text-sm tracking-widest rounded hover:bg-garage-gold-hover transition">
+            + NEW POST
+          </button>
+        </div>
 
-      <div className="mt-10 text-center">
-        <button className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm">
-          Load More Posts
-        </button>
+        {/* Post Cards */}
+        <div className="space-y-4">
+          {posts.map((post, i) => (
+            <div
+              key={i}
+              className="p-6 bg-garage-surface border-l-4 border-garage-gold border border-garage-border rounded hover:bg-garage-surface2 transition-colors cursor-pointer"
+            >
+              {/* Meta row */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0">
+                    {post.user[0]}
+                  </div>
+                  <span className="text-sm font-semibold text-garage-text">{post.user}</span>
+                  <span className="text-xs text-garage-muted">· {post.time}</span>
+                </div>
+                <span className="text-xs px-2 py-1 border border-garage-border text-garage-muted rounded font-medium uppercase tracking-wider">
+                  {post.tag}
+                </span>
+              </div>
+
+              {/* Question */}
+              <p className="text-garage-text leading-relaxed text-sm mb-3">
+                {post.question}
+              </p>
+
+              {/* Replies */}
+              <p className="text-xs text-garage-muted">
+                💬 {post.replies} replies
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Load More */}
+        <div className="mt-8 text-center">
+          <button className="px-6 py-2 border border-garage-border text-garage-muted rounded hover:border-garage-muted hover:text-garage-text transition text-sm">
+            Load More Posts
+          </button>
+        </div>
+
       </div>
     </div>
   );

@@ -1,5 +1,3 @@
-import { Sun, Moon } from 'lucide-react';
-import logo from './assets/Mech-Relay.png';
 import { useState, useEffect } from 'react';
 import { Search, HelpCircle, Camera } from 'lucide-react';
 import './App.css';
@@ -8,41 +6,33 @@ import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
 
+function MechRelayLogo({ size = 36 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#C9A84C" d="M43 4h14l2.5 11a33 33 0 0 1 7.5 3.1l10-5.5 9.9 9.9-5.5 10a33 33 0 0 1 3.1 7.5L96 43v14l-11 2.5a33 33 0 0 1-3.1 7.5l5.5 10-9.9 9.9-10-5.5a33 33 0 0 1-7.5 3.1L57 96H43l-2.5-11a33 33 0 0 1-7.5-3.1l-10 5.5-9.9-9.9 5.5-10a33 33 0 0 1-3.1-7.5L4 57V43l11-2.5a33 33 0 0 1 3.1-7.5l-5.5-10 9.9-9.9 10 5.5a33 33 0 0 1 7.5-3.1L43 4z"/>
+      <circle cx="50" cy="50" r="20" fill="#0F1923"/>
+      <ellipse cx="47" cy="47" rx="11" ry="9" fill="#F0EDE6"/>
+      <polygon points="40,55 44,56 41,60" fill="#F0EDE6"/>
+      <ellipse cx="54" cy="54" rx="9" ry="7" fill="#1A2535" stroke="#C9A84C" strokeWidth="1.5"/>
+      <polygon points="59,60 56,62 60,65" fill="#C9A84C"/>
+    </svg>
+  );
+}
+
 export default function App() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [fabOpen, setFabOpen] = useState(false);
-  const [activePage, setActivePage] = useState('home');
-  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [menuOpen, setMenuOpen]                   = useState(false);
+  const [fabOpen, setFabOpen]                     = useState(false);
+  const [activePage, setActivePage]               = useState('home');
+  const [showSearchModal, setShowSearchModal]     = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [questionText, setQuestionText] = useState('');
-  const [uploadFile, setUploadFile] = useState(null);
-  const [searchError, setSearchError] = useState('');
-  const [questionError, setQuestionError] = useState('');
-  const [uploadError, setUploadError] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  const toggleTheme = () => setDarkMode((prev) => !prev);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+  const [showUploadModal, setShowUploadModal]     = useState(false);
+  const [searchText, setSearchText]               = useState('');
+  const [questionText, setQuestionText]           = useState('');
+  const [uploadFile, setUploadFile]               = useState(null);
+  const [searchError, setSearchError]             = useState('');
+  const [questionError, setQuestionError]         = useState('');
+  const [uploadError, setUploadError]             = useState('');
+  const [searchOpen, setSearchOpen]               = useState(false);
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -68,7 +58,7 @@ export default function App() {
       });
       setShowSearchModal(false);
       setSearchText('');
-    } catch (err) {
+    } catch {
       setSearchError('Something went wrong. Try again.');
     }
   };
@@ -84,7 +74,7 @@ export default function App() {
       });
       setShowQuestionModal(false);
       setQuestionText('');
-    } catch (err) {
+    } catch {
       setQuestionError('Something went wrong. Try again.');
     }
   };
@@ -94,127 +84,119 @@ export default function App() {
     const formData = new FormData();
     formData.append('photo', uploadFile);
     try {
-      await fetch('http://localhost:5000/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      await fetch('http://localhost:5000/api/upload', { method: 'POST', body: formData });
       setShowUploadModal(false);
       setUploadFile(null);
-    } catch (err) {
+    } catch {
       setUploadError('Upload failed. Try again.');
     }
   };
 
-  const navItems = ['Home', 'How It Works', 'Community', 'About', 'Post', 'Login'];
-
   const getPageKey = (item) => item.toLowerCase().replace(/\s+/g, '-');
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-500 ease-in-out">
+    <div className="min-h-screen flex flex-col bg-garage-bg font-body">
 
-      {/* NAVBAR */}
-      <nav className="w-full bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      {/* ── NAVBAR ── */}
+      <nav
+        className="w-full sticky top-0 z-50 border-b border-garage-border"
+        style={{ backgroundColor: '#1A2535' }}
+      >
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <img
-            src={logo}
-            alt="MechRelay Logo"
-            className="max-w-20 h-auto transition-all dark:brightness-125 dark:contrast-125 dark:drop-shadow-md cursor-pointer"
+          <button
             onClick={() => setActivePage('home')}
-          />
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <MechRelayLogo size={36} />
+            <span className="font-condensed font-extrabold text-xl tracking-wide text-garage-text">
+              Mech<span className="text-garage-gold">Relay</span>
+            </span>
+          </button>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-6 text-gray-700 dark:text-gray-200 font-medium text-base">
+          <div className="hidden md:flex items-center gap-8">
             {['Home', 'How It Works', 'Community', 'About'].map((item) => (
               <a
                 key={item}
                 href="#"
                 onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); }}
-                className={`relative group transition-colors ${
+                className={`text-sm font-medium transition-colors ${
                   activePage === getPageKey(item)
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'hover:text-blue-600 dark:hover:text-blue-400'
+                    ? 'text-garage-text'
+                    : 'text-garage-muted hover:text-garage-text'
                 }`}
               >
                 {item}
-                <span className="pointer-events-none absolute left-0 -bottom-1 h-0.5 w-0 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </div>
 
-          {/* Right Side Actions */}
+          {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-3">
 
             {/* Expandable Search */}
-            <div className={`flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 transition-all duration-300 ${searchOpen ? 'w-56' : 'w-10'}`}>
-        <button onClick={() => setSearchOpen((prev) => !prev)}>
-          <Search className="w-4 h-4 text-gray-500 dark:text-gray-300 shrink-0" />
-        </button>
-        {searchOpen && (
-          <input
-            autoFocus
-            type="text"
-            placeholder="Search..."
-            onBlur={() => setSearchOpen(false)}
-            className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
-          />
-        )}
-      </div>
+            <div className={`flex items-center gap-2 border border-garage-border rounded transition-all duration-300 ${searchOpen ? 'w-52 px-3 py-2' : 'w-9 h-9 p-0'}`}
+              style={{ backgroundColor: '#0F1923' }}
+            >
+              <button
+                onClick={() => setSearchOpen((prev) => !prev)}
+                className="w-full h-full flex items-center justify-center"
+              >
+                <Search className="w-4 h-4 text-garage-muted" />
+              </button>
+              {searchOpen && (
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Search..."
+                  onBlur={() => setSearchOpen(false)}
+                  className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted"
+                />
+              )}
+            </div>
 
             {/* Post CTA */}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); setActivePage('post'); }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition text-sm"
+            <button
+              onClick={() => setActivePage('post')}
+              className="px-4 py-2 bg-garage-gold text-garage-bg font-condensed font-bold text-sm tracking-widest rounded hover:bg-garage-gold-hover transition"
             >
-              Post
-            </a>
+              POST
+            </button>
 
             {/* Login */}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); setActivePage('login'); }}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm"
+            <button
+              onClick={() => setActivePage('login')}
+              className="text-sm text-garage-muted hover:text-garage-text transition"
             >
               Login
-            </a>
+            </button>
           </div>
 
-    {/* Mobile Right Side */}
-    <div className="md:hidden flex items-center gap-3">
-      {/* Dark Mode Toggle — mobile only shows here */}
-      <button
-        onClick={toggleTheme}
-        className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
-      >
-        {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-      </button>
+          {/* Mobile Hamburger */}
+          <button
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+            aria-label="Toggle menu"
+          >
+            <span className={`block h-0.5 w-6 bg-garage-text transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-garage-text transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-garage-text transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+          </button>
+        </div>
 
-      {/* Hamburger */}
-      <button
-        onClick={() => setMenuOpen((prev) => !prev)}
-        className="flex flex-col justify-center items-center w-8 h-8 gap-1.5"
-        aria-label="Toggle menu"
-      >
-        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-        <span className={`block h-0.5 w-6 bg-gray-700 dark:bg-gray-200 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-      </button>
-    </div>
-  </div>
-
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-3 text-gray-700 dark:text-gray-200 font-medium">
+          <div className="border-t border-garage-border px-6 py-4 space-y-3" style={{ backgroundColor: '#1A2535' }}>
 
             {/* Mobile Search */}
-            <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
-              <Search className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+            <div className="flex items-center gap-2 border border-garage-border rounded px-3 py-2" style={{ backgroundColor: '#0F1923' }}>
+              <Search className="w-4 h-4 text-garage-muted" />
               <input
                 type="text"
                 placeholder="Search issues, codes, or topics..."
-                className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted"
               />
             </div>
 
@@ -224,149 +206,187 @@ export default function App() {
                 key={item}
                 href="#"
                 onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); setMenuOpen(false); }}
-                className="block hover:text-blue-600 dark:hover:text-blue-400 transition py-1"
+                className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium"
               >
                 {item}
               </a>
             ))}
-
-            {/* Dark Mode Toggle — inside mobile menu on desktop */}
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
-              </button>
-            </div>
-
           </div>
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-grow">
+      {/* ── MAIN CONTENT ── */}
+      <main>
 
         {/* HOME PAGE */}
         {activePage === 'home' && (
-          <section className="bg-gradient-to-b from-blue-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 py-20 transition-colors">
-            <div className="max-w-6xl mx-auto px-4 text-center">
-              <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white hero-animate hero-delay-1">
-                The Shop in Your Pocket
-              </h1>
-              <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto hero-animate hero-delay-2">
-                MechRelay helps mechanics talk to each other quickly and clearly.
-                Share problems, photos, and real-world advice — dead threads, or endless scrolling
-              . Just fast answers from techs who've done the job.
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center hero-animate hero-delay-3">
-                <button
-                  onClick={() => setActivePage('post')}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition button-ripple"
+          <>
+            {/* Hero */}
+            <section className="relative overflow-hidden py-28 text-center">
+              <div className="absolute inset-0 hero-grid pointer-events-none" />
+              <div className="relative z-10 max-w-3xl mx-auto px-6">
+                <h1
+                  className="font-condensed font-extrabold text-garage-text leading-none tracking-tight fade-up fade-up-1"
+                  style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)' }}
                 >
-                  Post a Question
-                </button>
-                <button
-                  onClick={() => setActivePage('how-it-works')}
-                  className="px-8 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition"
-                >
-                  See How It Works
-                </button>
+                  The Shop in<br />
+                  <span className="text-garage-gold">Your Pocket.</span>
+                </h1>
+                <p className="mt-5 text-garage-muted text-lg leading-relaxed max-w-xl mx-auto fade-up fade-up-2">
+                  Real answers from techs who've done the job. No dead threads,
+                  no endless scrolling — just fast, shop-floor knowledge when you need it.
+                </p>
+                <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center fade-up fade-up-3">
+                  <button
+                    onClick={() => setActivePage('post')}
+                    className="px-8 py-3 bg-garage-gold text-garage-bg font-condensed font-bold text-base tracking-widest rounded hover:bg-garage-gold-hover transition"
+                  >
+                    POST A QUESTION
+                  </button>
+                  <button
+                    onClick={() => setActivePage('how-it-works')}
+                    className="px-8 py-3 bg-transparent text-garage-text border border-garage-border font-condensed font-semibold text-base tracking-widest rounded hover:bg-garage-surface transition"
+                  >
+                    SEE HOW IT WORKS
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Value Strip */}
+            <div className="border-t border-b border-garage-border">
+              <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px bg-garage-border">
+                {[
+                  { title: 'Fast Answers',         sub: 'Real techs, real time'    },
+                  { title: 'Shop-Floor Knowledge', sub: 'Not textbook theory'      },
+                  { title: 'Mechanic to Mechanic', sub: 'No guesswork, no fluff'   },
+                  { title: 'Post Photos & Videos', sub: 'Show the problem clearly' },
+                ].map((v) => (
+                  <div key={v.title} className="px-4 py-5 flex flex-col items-center justify-center text-center" style={{ backgroundColor: '#0F1923' }}>
+                    <p className="font-condensed font-bold text-xs tracking-wider uppercase text-garage-text whitespace-nowrap">{v.title}</p>
+                    <p className="text-xs text-garage-muted mt-1">{v.sub}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          </section>
+          </>
         )}
 
-        {/* HOW IT WORKS PAGE */}
+        {/* PAGE ROUTES */}
         {activePage === 'how-it-works' && <HowItWorks />}
-
-        {/* COMMUNITY PAGE */}
-        {activePage === 'community' && <Community />}
-
-        {/* ABOUT PAGE */}
-        {activePage === 'about' && <WhyMechRelay />}
-
-        {/* POST PAGE */}
-        {activePage === 'post' && <Post />}
+        {activePage === 'community'    && <Community />}
+        {activePage === 'about'        && <WhyMechRelay />}
+        {activePage === 'post'         && <Post />}
 
         {/* LOGIN PAGE */}
         {activePage === 'login' && (
-          <section className="py-20 flex items-center justify-center">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Sign In to MechRelay</h2>
-              <input type="email" placeholder="Email" className="w-full mb-4 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none" />
-              <input type="password" placeholder="Password" className="w-full mb-6 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none" />
-              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Sign In</button>
-              <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          <section className="py-20 flex items-center justify-center px-6">
+            <div className="p-8 rounded w-full max-w-md border border-garage-border" style={{ backgroundColor: '#1A2535' }}>
+              <h2 className="font-condensed font-extrabold text-2xl tracking-wide text-garage-text mb-6 text-center">
+                Sign In to Mech<span className="text-garage-gold">Relay</span>
+              </h2>
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                style={{ backgroundColor: '#0F1923' }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full mb-6 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                style={{ backgroundColor: '#0F1923' }}
+              />
+              <button className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                SIGN IN
+              </button>
+              <p className="mt-4 text-center text-sm text-garage-muted">
                 Don't have an account?{' '}
-                <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">Sign up</a>
+                <a href="#" className="text-garage-gold hover:underline">Sign up</a>
               </p>
             </div>
           </section>
         )}
 
-        {/* FLOATING ACTION BUTTON */}
+        {/* ── MOBILE FAB ── */}
         <div className="fixed bottom-6 right-6 md:hidden z-50">
           <div className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-            <button onClick={() => setShowSearchModal(true)} className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-600 text-white shadow-lg text-sm">
+            <button
+              onClick={() => setShowSearchModal(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
+              style={{ backgroundColor: '#1A2535' }}
+            >
               <Search className="w-4 h-4" /><span>Search</span>
             </button>
-            <button onClick={() => setShowQuestionModal(true)} className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-900 text-white shadow-lg text-sm">
+            <button
+              onClick={() => setShowQuestionModal(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
+              style={{ backgroundColor: '#1A2535' }}
+            >
               <HelpCircle className="w-4 h-4" /><span>Ask a Question</span>
             </button>
-            <button onClick={() => setShowUploadModal(true)} className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-600 text-white shadow-lg text-sm">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
+              style={{ backgroundColor: '#1A2535' }}
+            >
               <Camera className="w-4 h-4" /><span>Upload Photo</span>
             </button>
           </div>
           <button
             onClick={() => setFabOpen((prev) => !prev)}
-            className="w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center text-2xl active:scale-95 transition-transform"
+            className="w-14 h-14 rounded bg-garage-gold text-garage-bg shadow-xl flex items-center justify-center text-2xl font-bold active:scale-95 transition-transform"
           >
             {fabOpen ? '×' : '+'}
           </button>
         </div>
 
-        {/* SEARCH MODAL */}
+        {/* ── SEARCH MODAL ── */}
         {showSearchModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSearchModal(false)}>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-md animate-modal" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Search</h2>
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowSearchModal(false)}>
+            <div className="border border-garage-border p-6 rounded w-11/12 max-w-md" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-condensed font-bold text-xl text-garage-text mb-4">Search</h2>
               <input
                 type="text"
                 value={searchText}
                 onChange={(e) => { setSearchText(e.target.value); setSearchError(''); }}
                 placeholder="Search issues, codes, or topics..."
-                className="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none"
+                className="w-full px-3 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                style={{ backgroundColor: '#0F1923' }}
               />
-              {searchError && <p className="text-red-500 text-sm mt-2">{searchError}</p>}
-              <button onClick={handleSearchSubmit} className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Search</button>
+              {searchError && <p className="text-red-400 text-sm mt-2">{searchError}</p>}
+              <button onClick={handleSearchSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                SEARCH
+              </button>
             </div>
           </div>
         )}
 
-        {/* ASK A QUESTION MODAL */}
+        {/* ── QUESTION MODAL ── */}
         {showQuestionModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowQuestionModal(false)}>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-md animate-modal" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Ask a Question</h2>
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowQuestionModal(false)}>
+            <div className="border border-garage-border p-6 rounded w-11/12 max-w-md" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-condensed font-bold text-xl text-garage-text mb-4">Ask a Question</h2>
               <textarea
                 value={questionText}
                 onChange={(e) => { setQuestionText(e.target.value); setQuestionError(''); }}
                 placeholder="Describe the issue..."
-                className="w-full h-32 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white outline-none"
+                className="w-full h-32 px-3 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition resize-none text-sm"
+                style={{ backgroundColor: '#0F1923' }}
               />
-              {questionError && <p className="text-red-500 text-sm mt-2">{questionError}</p>}
-              <button onClick={handleQuestionSubmit} className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Submit</button>
+              {questionError && <p className="text-red-400 text-sm mt-2">{questionError}</p>}
+              <button onClick={handleQuestionSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                SUBMIT
+              </button>
             </div>
           </div>
         )}
 
-        {/* UPLOAD PHOTO MODAL */}
+        {/* ── UPLOAD MODAL ── */}
         {showUploadModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowUploadModal(false)}>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-md animate-modal" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Upload Photo</h2>
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowUploadModal(false)}>
+            <div className="border border-garage-border p-6 rounded w-11/12 max-w-md" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-condensed font-bold text-xl text-garage-text mb-4">Upload Photo</h2>
               <input
                 type="file"
                 accept="image/*"
@@ -378,21 +398,25 @@ export default function App() {
                   if (file.size > 5 * 1024 * 1024) { setUploadError('Image must be under 5MB.'); setUploadFile(null); return; }
                   setUploadFile(file);
                 }}
-                className="w-full text-gray-900 dark:text-gray-200"
+                className="w-full text-garage-muted text-sm"
               />
-              {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
-              <button onClick={handleUploadSubmit} className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Upload</button>
+              {uploadError && <p className="text-red-400 text-sm mt-2">{uploadError}</p>}
+              <button onClick={handleUploadSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                UPLOAD
+              </button>
             </div>
           </div>
         )}
 
       </main>
 
-      {/* FOOTER */}
-      <footer className="bg-white dark:bg-gray-800 py-8 mt-20 shadow-inner transition-colors relative z-10">
-        <div className="max-w-6xl mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-          <p className="text-lg font-medium">MechRelay © {new Date().getFullYear()}</p>
-          <p className="mt-2 text-sm">
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-garage-border py-8" style={{ backgroundColor: '#1A2535' }}>
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="font-condensed font-extrabold text-lg tracking-wide text-garage-text">
+            Mech<span className="text-garage-gold">Relay</span>
+          </p>
+          <p className="mt-1 text-sm text-garage-muted">
             Empowering mechanics to learn, collaborate, and solve problems — faster, smarter, together.
           </p>
         </div>

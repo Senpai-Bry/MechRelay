@@ -2,64 +2,119 @@ import React from "react";
 
 export default function WhyMechRelay() {
   return (
-    <div className="p-6 md:p-10 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-garage-bg">
 
-      {/* Page Header */}
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-        Why MechRelay Exists
-      </h1>
+      {/* PAGE HEADER */}
+      <section className="relative overflow-hidden py-20 text-center border-b border-garage-border">
+        <div className="absolute inset-0 hero-grid pointer-events-none" />
+        <div className="relative z-10 max-w-3xl mx-auto px-6">
+          <h1 className="font-condensed font-extrabold text-garage-text leading-none tracking-tight"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
+            Why <span className="text-garage-gold">MechRelay.</span>
+          </h1>
+          <p className="mt-4 text-garage-muted text-lg leading-relaxed max-w-xl mx-auto">
+            A platform built from real shop‑floor experience — not theory, not corporate guesswork.
+          </p>
+        </div>
+      </section>
 
-      {/* Highlight Box */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-5 rounded-md mb-10">
-        <p className="text-gray-800 dark:text-gray-200 font-medium">
-          <span className="font-bold">Built by a mechanic, for mechanics.</span>{' '}
-          Not in a boardroom. On the shop floor — where the real problems are.
-        </p>
-      </div>
+      <div className="max-w-4xl mx-auto px-6 py-14 space-y-14">
 
-      {/* Section 1 */}
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-        Where It Started
-      </h2>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-        My dad handed me a flashlight when I was 9 years old and said "hold this." 
-        I didn't know it then, but that moment started everything. I spent 13 years 
-        on the shop floor learning the trade the real way — through grease, mistakes, 
-        long days, and the guy next to me who'd seen it all before.
-      </p>
+        {/* MISSION BLOCK */}
+        <section className="p-6 bg-garage-surface border-l-4 border-garage-gold border border-garage-border rounded">
+          <p className="font-condensed font-bold text-2xl text-garage-text mb-2">
+            Built by a mechanic, for mechanics.
+          </p>
+          <p className="text-garage-muted leading-relaxed text-sm">
+            Not in a boardroom. Not in a meeting.
+            On the shop floor — where the real problems live.
+          </p>
+        </section>
 
-      {/* Section 2 */}
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-        The Problem
-      </h2>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-        Good mechanics were wasting hours hunting for answers that someone three bays 
-        over already had. Not every shop has that experienced guy to turn to. Not every 
-        tech has someone in their corner. And when you're stuck, the clock is running, 
-        and the customer is waiting — a dead forum post from 2011 that almost describes 
-        your problem just doesn't cut it.
-      </p>
+        {/* ORIGIN STORY */}
+        <section>
+          <h2 className="font-condensed font-extrabold text-3xl text-garage-text mb-6 tracking-tight">
+            Where It <span className="text-garage-gold">Started.</span>
+          </h2>
+          <div className="border-l-4 border-garage-gold pl-6">
+            <p className="text-garage-muted leading-relaxed text-sm">
+              My dad handed me a flashlight when I was 9 and said, "hold this."
+              I didn't know it then, but that moment started everything.
+              I spent 13 years learning the trade the real way — through grease, mistakes,
+              long days, and the guy next to me who'd seen it all before.
+            </p>
+          </div>
+        </section>
 
-      {/* Section 3 */}
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-        The Personal Why
-      </h2>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-        The knowledge passed between mechanics, bay to bay, is worth more than any 
-        manual ever written. I wanted something that felt like turning to the guy next 
-        to you and saying "hey, you ever seen this before?" — and actually getting an 
-        answer. That knowledge shouldn't stay in one shop. It should travel. Mechanic 
-        to mechanic, coast to coast — just like my dad passing it to me.
-      </p>
+        {/* PROBLEM GRID */}
+        <section>
+          <h2 className="font-condensed font-extrabold text-3xl text-garage-text mb-8 tracking-tight">
+            The Problem Mechanics <span className="text-garage-gold">Face.</span>
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              {
+                title: "Scattered Knowledge",
+                body: "Answers live in a hundred places — forums, old notes, random videos, or the memory of one tech who might not be there tomorrow.",
+              },
+              {
+                title: "No Mentorship Pipeline",
+                body: "Not every shop has that experienced tech to turn to. New mechanics are often left to figure it out alone.",
+              },
+              {
+                title: "Outdated Forums",
+                body: "Dead threads from 2011 don't help when the customer is waiting and the clock is running.",
+              },
+              {
+                title: "Lost Experience",
+                body: "The knowledge passed bay‑to‑bay is priceless — but it disappears when it stays inside one shop.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="p-6 bg-garage-surface border-l-4 border-garage-gold border border-garage-border rounded hover:bg-garage-surface2 transition-colors"
+              >
+                <h3 className="font-condensed font-bold text-lg text-garage-text mb-2 tracking-wide">
+                  {item.title}
+                </h3>
+                <p className="text-garage-muted leading-relaxed text-sm">
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* Closing */}
-      <div className="mt-12 p-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
-        <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          That's MechRelay.
-        </p>
-        <p className="text-gray-700 dark:text-gray-300">
-          Because no mechanic should have to figure it out alone.
-        </p>
+        {/* PERSONAL WHY */}
+        <section>
+          <h2 className="font-condensed font-extrabold text-3xl text-garage-text mb-6 tracking-tight">
+            The Personal <span className="text-garage-gold">Why.</span>
+          </h2>
+          <p className="text-garage-muted leading-relaxed text-sm mb-4">
+            The knowledge shared between mechanics is worth more than any manual ever written.
+            I wanted something that felt like turning to the guy next to you and saying,
+            "hey, you ever seen this before?" — and actually getting an answer.
+          </p>
+          <p className="text-garage-muted leading-relaxed text-sm">
+            That knowledge shouldn't stay in one shop.
+            It should travel — mechanic to mechanic, coast to coast —
+            just like my dad passing it to me.
+          </p>
+        </section>
+
+        {/* CLOSING CTA */}
+        <section className="text-center p-10 bg-garage-surface border border-garage-border rounded">
+          <h3 className="font-condensed font-extrabold text-3xl text-garage-text mb-3 tracking-tight">
+            That's <span className="text-garage-gold">MechRelay.</span>
+          </h3>
+          <p className="text-garage-muted text-sm mb-8">
+            Because no mechanic should have to figure it out alone.
+          </p>
+          <button className="px-8 py-3 bg-garage-gold text-garage-bg font-condensed font-bold tracking-widest text-sm rounded hover:bg-garage-gold-hover transition">
+            EXPLORE THE PLATFORM
+          </button>
+        </section>
+
       </div>
     </div>
   );
