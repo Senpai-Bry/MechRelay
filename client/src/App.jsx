@@ -6,15 +6,21 @@ import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
 
+// ─────────────────────────────────────────────
+//  LOGO: Filled gear with chat bubble cut-out
+//  Solid gold gear, bubble punched as negative
+//  space. Bold, graphic, reads at any size.
+// ─────────────────────────────────────────────
 function MechRelayLogo({ size = 36 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <path fill="#C9A84C" d="M43 4h14l2.5 11a33 33 0 0 1 7.5 3.1l10-5.5 9.9 9.9-5.5 10a33 33 0 0 1 3.1 7.5L96 43v14l-11 2.5a33 33 0 0 1-3.1 7.5l5.5 10-9.9 9.9-10-5.5a33 33 0 0 1-7.5 3.1L57 96H43l-2.5-11a33 33 0 0 1-7.5-3.1l-10 5.5-9.9-9.9 5.5-10a33 33 0 0 1-3.1-7.5L4 57V43l11-2.5a33 33 0 0 1 3.1-7.5l-5.5-10 9.9-9.9 10 5.5a33 33 0 0 1 7.5-3.1L43 4z"/>
-      <circle cx="50" cy="50" r="20" fill="#0F1923"/>
-      <ellipse cx="47" cy="47" rx="11" ry="9" fill="#F0EDE6"/>
-      <polygon points="40,55 44,56 41,60" fill="#F0EDE6"/>
-      <ellipse cx="54" cy="54" rx="9" ry="7" fill="#1A2535" stroke="#C9A84C" strokeWidth="1.5"/>
-      <polygon points="59,60 56,62 60,65" fill="#C9A84C"/>
+    <svg width={size} height={size} viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="46" height="46" rx="9" fill="#0F1923"/>
+      <path d="M23 5.5 L24.6 5.5 L25.8 8.8 C27.1 9.1 28.3 9.7 29.4 10.4 L32.7 8.8 L35.2 11.3 L33.6 14.6 C34.3 15.7 34.9 16.9 35.2 18.2 L38.5 19.4 L38.5 22.6 L35.2 23.8 C34.9 25.1 34.3 26.3 33.6 27.4 L35.2 30.7 L32.7 33.2 L29.4 31.6 C28.3 32.3 27.1 32.9 25.8 33.2 L24.6 36.5 L21.4 36.5 L20.2 33.2 C18.9 32.9 17.7 32.3 16.6 31.6 L13.3 33.2 L10.8 30.7 L12.4 27.4 C11.7 26.3 11.1 25.1 10.8 23.8 L7.5 22.6 L7.5 19.4 L10.8 18.2 C11.1 16.9 11.7 15.7 12.4 14.6 L10.8 11.3 L13.3 8.8 L16.6 10.4 C17.7 9.7 18.9 9.1 20.2 8.8 Z" fill="#C9A84C"/>
+      <rect x="15" y="16" width="16" height="11" rx="2.5" fill="#0F1923"/>
+      <polygon points="16.5,27 19,30.5 21.5,27" fill="#0F1923"/>
+      <circle cx="19" cy="21.5" r="1.2" fill="#C9A84C"/>
+      <circle cx="23" cy="21.5" r="1.2" fill="#C9A84C"/>
+      <circle cx="27" cy="21.5" r="1.2" fill="#C9A84C"/>
     </svg>
   );
 }
@@ -137,7 +143,8 @@ export default function App() {
           <div className="hidden md:flex items-center gap-3">
 
             {/* Expandable Search */}
-            <div className={`flex items-center gap-2 border border-garage-border rounded transition-all duration-300 ${searchOpen ? 'w-52 px-3 py-2' : 'w-9 h-9 p-0'}`}
+            <div
+              className={`flex items-center gap-2 border border-garage-border rounded transition-all duration-300 ${searchOpen ? 'w-52 px-3 py-2' : 'w-9 h-9 p-0'}`}
               style={{ backgroundColor: '#0F1923' }}
             >
               <button
