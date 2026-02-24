@@ -108,14 +108,14 @@ export default function App() {
         className="w-full sticky top-0 z-50 border-b border-garage-border"
         style={{ backgroundColor: '#1A2535' }}
       >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
 
           {/* Logo */}
           <button
             onClick={() => setActivePage('home')}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <MechRelayLogo size={36} />
+            <MechRelayLogo size={48} />
             <span className="font-condensed font-extrabold text-xl tracking-wide text-garage-text">
               Mech<span className="text-garage-gold">Relay</span>
             </span>
