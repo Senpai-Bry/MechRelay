@@ -113,9 +113,12 @@ export default function App() {
           {/* Logo */}
           <button
             onClick={() => setActivePage('home')}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer justify-center h-20"
+            style={{ minWidth: 120 }}
           >
-            <MechRelayLogo size={48} />
+            <span className="flex items-center justify-center h-full">
+              <MechRelayLogo size={48} />
+            </span>
             <span className="font-condensed font-extrabold text-xl tracking-wide text-garage-text">
               Mech<span className="text-garage-gold">Relay</span>
             </span>
