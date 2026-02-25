@@ -29,12 +29,6 @@ export default function Post() {
         <p className="text-garage-muted text-sm max-w-xs leading-relaxed">
           Other mechanics will be able to see and reply to your post.
         </p>
-        <button
-          onClick={() => { setSubmitted(false); setPostText(''); setSelectedTag(''); }}
-          className="mt-8 px-6 py-2 bg-garage-gold text-garage-bg font-condensed font-bold text-sm tracking-widest rounded hover:bg-garage-gold-hover transition"
-        >
-          POST ANOTHER
-        </button>
       </div>
     );
   }
