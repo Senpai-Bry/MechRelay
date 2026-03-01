@@ -6,38 +6,88 @@ import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
 
-// ─────────────────────────────────────────────
-//  LOGO: Filled gear with chat bubble cut-out
-//  Solid gold gear, bubble punched as negative
-//  space. Bold, graphic, reads at any size.
-// ─────────────────────────────────────────────
 function MechRelayLogo({ size = 36 }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 46 46"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'block', margin: 'auto' }}
-    >
+    <svg width={size} height={size} viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="46" height="46" rx="9" fill="#0F1923"/>
-      <g transform="translate(0, 2)">
-        <path d="M23 5.5 L24.6 5.5 L25.8 8.8 C27.1 9.1 28.3 9.7 29.4 10.4 L32.7 8.8 L35.2 11.3 L33.6 14.6 C34.3 15.7 34.9 16.9 35.2 18.2 L38.5 19.4 L38.5 22.6 L35.2 23.8 C34.9 25.1 34.3 26.3 33.6 27.4 L35.2 30.7 L32.7 33.2 L29.4 31.6 C28.3 32.3 27.1 32.9 25.8 33.2 L24.6 36.5 L21.4 36.5 L20.2 33.2 C18.9 32.9 17.7 32.3 16.6 31.6 L13.3 33.2 L10.8 30.7 L12.4 27.4 C11.7 26.3 11.1 25.1 10.8 23.8 L7.5 22.6 L7.5 19.4 L10.8 18.2 C11.1 16.9 11.7 15.7 12.4 14.6 L10.8 11.3 L13.3 8.8 L16.6 10.4 C17.7 9.7 18.9 9.1 20.2 8.8 Z" fill="#C9A84C"/>
-        <rect x="15" y="16" width="16" height="11" rx="2.5" fill="#0F1923"/>
-        <polygon points="16.5,27 19,30.5 21.5,27" fill="#0F1923"/>
-        <circle cx="19" cy="21.5" r="1.2" fill="#C9A84C"/>
-        <circle cx="23" cy="21.5" r="1.2" fill="#C9A84C"/>
-        <circle cx="27" cy="21.5" r="1.2" fill="#C9A84C"/>
-      </g>
+      <path d="M23 5.5 L24.6 5.5 L25.8 8.8 C27.1 9.1 28.3 9.7 29.4 10.4 L32.7 8.8 L35.2 11.3 L33.6 14.6 C34.3 15.7 34.9 16.9 35.2 18.2 L38.5 19.4 L38.5 22.6 L35.2 23.8 C34.9 25.1 34.3 26.3 33.6 27.4 L35.2 30.7 L32.7 33.2 L29.4 31.6 C28.3 32.3 27.1 32.9 25.8 33.2 L24.6 36.5 L21.4 36.5 L20.2 33.2 C18.9 32.9 17.7 32.3 16.6 31.6 L13.3 33.2 L10.8 30.7 L12.4 27.4 C11.7 26.3 11.1 25.1 10.8 23.8 L7.5 22.6 L7.5 19.4 L10.8 18.2 C11.1 16.9 11.7 15.7 12.4 14.6 L10.8 11.3 L13.3 8.8 L16.6 10.4 C17.7 9.7 18.9 9.1 20.2 8.8 Z" fill="#C9A84C"/>
+      <rect x="15" y="16" width="16" height="11" rx="2.5" fill="#0F1923"/>
+      <polygon points="16.5,27 19,30.5 21.5,27" fill="#0F1923"/>
+      <circle cx="19" cy="21.5" r="1.2" fill="#C9A84C"/>
+      <circle cx="23" cy="21.5" r="1.2" fill="#C9A84C"/>
+      <circle cx="27" cy="21.5" r="1.2" fill="#C9A84C"/>
     </svg>
   );
 }
+
+// ── Seed posts — realistic shop-floor content ──
+const SEED_POSTS = [
+  {
+    id: 1,
+    user: "DieselTech_Ray",
+    time: "2 hours ago",
+    question: "2018 F-250 6.7 Power Stroke — injector tick at cold start, goes away after 5 min. Anyone seen this before?",
+    tag: "Diesel",
+    replies: [
+      { user: "ShopFloor_Mike", time: "1 hour ago", text: "Classic HPFP cold-start characteristic on the 6.7. If it fully clears after warm-up and power feels normal, I wouldn't stress it. Keep an eye on fuel trims." },
+      { user: "LiftBay_Sara", time: "45 min ago", text: "Check your oil level first — low oil can cause that on the 6.7. Also worth pulling codes to make sure there's no ICP fault hiding." },
+      { user: "GarageGuru_T", time: "30 min ago", text: "Had the same thing on a customer's '19. Ended up being a stuck injector cup. Not urgent but worth scoping injector return rates if it gets worse." },
+    ],
+  },
+  {
+    id: 2,
+    user: "ShopFloor_Mike",
+    time: "5 hours ago",
+    question: "Best way to bleed ABS module without a scan tool on a 2015 Silverado? Manual bleeding isn't clearing the pedal.",
+    tag: "Brakes",
+    replies: [
+      { user: "DieselTech_Ray", time: "4 hours ago", text: "Honestly you're not going to get it done right without bidirectional control on the ABS solenoids. Even a cheap Autel will do the automated bleed sequence." },
+      { user: "WrenchHead_Jo", time: "3 hours ago", text: "Gravity bleed with the key off first, then do a manual pedal bleed. Sometimes that's enough to get the air out of the modulator if you're lucky." },
+    ],
+  },
+  {
+    id: 3,
+    user: "LiftBay_Sara",
+    time: "Yesterday",
+    question: "Anyone have a trick for pulling a rounded-off oil drain plug without destroying the pan? Already tried extractor sockets.",
+    tag: "Tips & Tricks",
+    replies: [
+      { user: "ShopFloor_Mike", time: "23 hours ago", text: "Grab a set of Irwin bolt extractors — the reverse-thread kind. Heat the area around the plug with a heat gun first, not a torch. Usually breaks free." },
+      { user: "DieselTech_Ray", time: "22 hours ago", text: "We keep a Gator Grip socket set in the shop just for this. If the head is totally gone, weld a nut on — works every time." },
+      { user: "LiftBay_Sara", time: "21 hours ago", text: "Update: Irwin extractors did it. Thanks guys. Going with a drain plug repair kit so the customer doesn't come back next oil change with the same problem." },
+      { user: "GarageGuru_T", time: "20 hours ago", text: "Good call on the repair kit. FYI — Dorman makes a solid thread repair kit for pans, been using them for years with no comebacks." },
+    ],
+  },
+  {
+    id: 4,
+    user: "WrenchHead_Jo",
+    time: "Yesterday",
+    question: "2020 Jeep Wrangler JL — P0300 random misfire, only shows up under load above 3000 RPM. Plugs and coils already replaced.",
+    tag: "Engine",
+    replies: [
+      { user: "LiftBay_Sara", time: "Yesterday", text: "Check fuel pressure under load — a weak pump will show up exactly like that on the JL. Static pressure can look fine but drop out when you get on it." },
+      { user: "ShopFloor_Mike", time: "Yesterday", text: "Also scope the cam and crank sensors. Had a JL last month with same symptoms — cracked crank sensor causing signal drop at high RPM. No code for the sensor, just the misfire." },
+    ],
+  },
+  {
+    id: 5,
+    user: "GarageGuru_T",
+    time: "2 days ago",
+    question: "What's everyone using for TPMS relearn on late model GMs? My old tool stopped supporting anything past 2022.",
+    tag: "Electrical",
+    replies: [
+      { user: "DieselTech_Ray", time: "2 days ago", text: "ATEQ VT56 has been solid for us. Covers everything through current year and the updates are free for 12 months." },
+      { user: "WrenchHead_Jo", time: "2 days ago", text: "We use the Autel MX-Sensor kit. More expensive upfront but you can program universal sensors right at the counter and the app keeps everything updated." },
+    ],
+  },
+];
 
 export default function App() {
   const [menuOpen, setMenuOpen]                   = useState(false);
   const [fabOpen, setFabOpen]                     = useState(false);
   const [activePage, setActivePage]               = useState('home');
+  const [activePostId, setActivePostId]           = useState(null);
+  const [posts, setPosts]                         = useState(SEED_POSTS);
   const [showSearchModal, setShowSearchModal]     = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showUploadModal, setShowUploadModal]     = useState(false);
@@ -61,6 +111,12 @@ export default function App() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
+
+  // Called by Post page when a new post is submitted
+  const handleNewPost = (newPost) => {
+    setPosts((prev) => [newPost, ...prev]);
+    setActivePage('community');
+  };
 
   const handleSearchSubmit = async () => {
     if (!searchText.trim()) { setSearchError('Search cannot be empty.'); return; }
@@ -109,6 +165,12 @@ export default function App() {
 
   const getPageKey = (item) => item.toLowerCase().replace(/\s+/g, '-');
 
+  const navigateTo = (page) => {
+    setActivePage(page);
+    setActivePostId(null);
+    setMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-garage-bg font-body">
 
@@ -120,14 +182,8 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <button
-            onClick={() => setActivePage('home')}
-            className="flex items-center gap-2 cursor-pointer justify-center h-20"
-            style={{ minWidth: 120 }}
-          >
-            <span className="flex items-center justify-center h-full">
-              <MechRelayLogo size={48} />
-            </span>
+          <button onClick={() => navigateTo('home')} className="flex items-center gap-2 cursor-pointer">
+            <MechRelayLogo size={48} />
             <span className="font-condensed font-extrabold text-xl tracking-wide text-garage-text">
               Mech<span className="text-garage-gold">Relay</span>
             </span>
@@ -139,7 +195,7 @@ export default function App() {
               <a
                 key={item}
                 href="#"
-                onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); }}
+                onClick={(e) => { e.preventDefault(); navigateTo(getPageKey(item)); }}
                 className={`text-sm font-medium transition-colors ${
                   activePage === getPageKey(item)
                     ? 'text-garage-text'
@@ -153,16 +209,11 @@ export default function App() {
 
           {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-3">
-
-            {/* Expandable Search */}
             <div
               className={`flex items-center gap-2 border border-garage-border rounded transition-all duration-300 ${searchOpen ? 'w-52 px-3 py-2' : 'w-9 h-9 p-0'}`}
               style={{ backgroundColor: '#0F1923' }}
             >
-              <button
-                onClick={() => setSearchOpen((prev) => !prev)}
-                className="w-full h-full flex items-center justify-center"
-              >
+              <button onClick={() => setSearchOpen((prev) => !prev)} className="w-full h-full flex items-center justify-center">
                 <Search className="w-4 h-4 text-garage-muted" />
               </button>
               {searchOpen && (
@@ -175,18 +226,14 @@ export default function App() {
                 />
               )}
             </div>
-
-            {/* Post CTA */}
             <button
-              onClick={() => setActivePage('post')}
+              onClick={() => navigateTo('post')}
               className="px-4 py-2 bg-garage-gold text-garage-bg font-condensed font-bold text-sm tracking-widest rounded hover:bg-garage-gold-hover transition"
             >
               POST
             </button>
-
-            {/* Login */}
             <button
-              onClick={() => setActivePage('login')}
+              onClick={() => navigateTo('login')}
               className="text-sm text-garage-muted hover:text-garage-text transition"
             >
               Login
@@ -208,8 +255,6 @@ export default function App() {
         {/* Mobile Menu */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="border-t border-garage-border px-6 py-4 space-y-3" style={{ backgroundColor: '#1A2535' }}>
-
-            {/* Mobile Search */}
             <div className="flex items-center gap-2 border border-garage-border rounded px-3 py-2" style={{ backgroundColor: '#0F1923' }}>
               <Search className="w-4 h-4 text-garage-muted" />
               <input
@@ -218,13 +263,11 @@ export default function App() {
                 className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted"
               />
             </div>
-
-            {/* Mobile Nav Links */}
             {['Home', 'How It Works', 'Community', 'About', 'Post', 'Login'].map((item) => (
               <a
                 key={item}
                 href="#"
-                onClick={(e) => { e.preventDefault(); setActivePage(getPageKey(item)); setMenuOpen(false); }}
+                onClick={(e) => { e.preventDefault(); navigateTo(getPageKey(item)); }}
                 className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium"
               >
                 {item}
@@ -235,12 +278,11 @@ export default function App() {
       </nav>
 
       {/* ── MAIN CONTENT ── */}
-      <main>
+      <main className="flex-1">
 
-        {/* HOME PAGE */}
+        {/* HOME */}
         {activePage === 'home' && (
           <>
-            {/* Hero */}
             <section className="relative overflow-hidden py-28 text-center">
               <div className="absolute inset-0 hero-grid pointer-events-none" />
               <div className="relative z-10 max-w-3xl mx-auto px-6">
@@ -257,13 +299,13 @@ export default function App() {
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center fade-up fade-up-3">
                   <button
-                    onClick={() => setActivePage('post')}
+                    onClick={() => navigateTo('post')}
                     className="px-8 py-3 bg-garage-gold text-garage-bg font-condensed font-bold text-base tracking-widest rounded hover:bg-garage-gold-hover transition"
                   >
                     POST A QUESTION
                   </button>
                   <button
-                    onClick={() => setActivePage('how-it-works')}
+                    onClick={() => navigateTo('how-it-works')}
                     className="px-8 py-3 bg-transparent text-garage-text border border-garage-border font-condensed font-semibold text-base tracking-widest rounded hover:bg-garage-surface transition"
                   >
                     SEE HOW IT WORKS
@@ -272,7 +314,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* Value Strip */}
             <div className="border-t border-b border-garage-border">
               <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px bg-garage-border">
                 {[
@@ -293,11 +334,31 @@ export default function App() {
 
         {/* PAGE ROUTES */}
         {activePage === 'how-it-works' && <HowItWorks />}
-        {activePage === 'community'    && <Community />}
         {activePage === 'about'        && <WhyMechRelay />}
-        {activePage === 'post'         && <Post />}
 
-        {/* LOGIN PAGE */}
+        {activePage === 'community' && (
+          <Community
+            posts={posts}
+            activePostId={activePostId}
+            setActivePostId={setActivePostId}
+            onNewPost={() => navigateTo('post')}
+            onAddReply={(postId, reply) => {
+              setPosts((prev) =>
+                prev.map((p) =>
+                  p.id === postId
+                    ? { ...p, replies: [...p.replies, reply] }
+                    : p
+                )
+              );
+            }}
+          />
+        )}
+
+        {activePage === 'post' && (
+          <Post onSubmit={handleNewPost} />
+        )}
+
+        {/* LOGIN */}
         {activePage === 'login' && (
           <section className="py-20 flex items-center justify-center px-6">
             <div className="p-8 rounded w-full max-w-md border border-garage-border" style={{ backgroundColor: '#1A2535' }}>

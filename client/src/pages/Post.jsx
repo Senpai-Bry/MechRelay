@@ -3,16 +3,34 @@ import { Camera } from "lucide-react";
 
 const tags = ["Engine", "Brakes", "Diesel", "Electrical", "Transmission", "Suspension", "Tips & Tricks", "Other"];
 
-export default function Post() {
+export default function Post({ onSubmit }) {
   const [selectedTag, setSelectedTag] = useState('');
-  const [postText, setPostText] = useState('');
-  const [postError, setPostError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [postText, setPostText]       = useState('');
+  const [postError, setPostError]     = useState('');
+  const [submitted, setSubmitted]     = useState(false);
 
   const handleSubmit = () => {
     if (!postText.trim()) { setPostError('Please describe the issue.'); return; }
     if (postText.length < 10) { setPostError('Please provide more detail (10+ characters).'); return; }
+
+    const newPost = {
+      id:       Date.now(),
+      user:     'You',
+      time:     'Just now',
+      question: postText.trim(),
+      tag:      selectedTag || 'Other',
+      replies:  [],
+    };
+
     setSubmitted(true);
+
+    // After a short pause so the success screen shows, navigate to community
+    setTimeout(() => {
+      setSubmitted(false);
+      setPostText('');
+      setSelectedTag('');
+      if (onSubmit) onSubmit(newPost);
+    }, 1800);
   };
 
   if (submitted) {
@@ -27,8 +45,7 @@ export default function Post() {
           Post <span className="text-garage-gold">Submitted.</span>
         </h2>
         <p className="text-garage-muted text-sm max-w-xs leading-relaxed">
-          Other mechanics will be able to see and reply to your post.
-        </p>
+          Taking you to the community feed...x        </p>
       </div>
     );
   }
