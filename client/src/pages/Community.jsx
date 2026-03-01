@@ -303,7 +303,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
             <div
               key={post.id}
               onClick={() => setActivePostId(post.id)}
-              className="p-6 bg-garage-surface border-l-4 border-garage-gold border border-garage-border rounded hover:bg-garage-surface2 transition-colors cursor-pointer group"
+              className="p-6 bg-garage-surface border-l-4 border-garage-gold border-garage-border rounded hover:bg-garage-surface2 transition-colors cursor-pointer group"
             >
               {/* Meta row */}
               <div className="flex items-center justify-between mb-3">
