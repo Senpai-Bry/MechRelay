@@ -2,11 +2,9 @@
 // No npm installs needed. Requires Node 18+.
 
 import http from "http";
-// Polyfill fetch for Node.js if needed
-import('node:node-fetch').then(mod => { if (!globalThis.fetch) globalThis.fetch = mod.default; }).catch(() => {});
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const PORT    = 5000;
+const PORT    = 3000;
 
 if (!API_KEY) {
   console.error("❌  Missing ANTHROPIC_API_KEY. Run as:\n   ANTHROPIC_API_KEY=sk-ant-... node proxy.mjs");
