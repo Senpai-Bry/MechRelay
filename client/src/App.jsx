@@ -6,6 +6,8 @@ import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
 
+const API = 'http://localhost:5000/api';
+
 function MechRelayLogo({ size = 36 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -20,84 +22,58 @@ function MechRelayLogo({ size = 36 }) {
   );
 }
 
-// ── Seed posts — realistic shop-floor content ──
-const SEED_POSTS = [
-  {
-    id: 1,
-    user: "DieselTech_Ray",
-    time: "2 hours ago",
-    question: "2018 F-250 6.7 Power Stroke — injector tick at cold start, goes away after 5 min. Anyone seen this before?",
-    tag: "Diesel",
-    replies: [
-      { user: "ShopFloor_Mike", time: "1 hour ago", text: "Classic HPFP cold-start characteristic on the 6.7. If it fully clears after warm-up and power feels normal, I wouldn't stress it. Keep an eye on fuel trims." },
-      { user: "LiftBay_Sara", time: "45 min ago", text: "Check your oil level first — low oil can cause that on the 6.7. Also worth pulling codes to make sure there's no ICP fault hiding." },
-      { user: "GarageGuru_T", time: "30 min ago", text: "Had the same thing on a customer's '19. Ended up being a stuck injector cup. Not urgent but worth scoping injector return rates if it gets worse." },
-    ],
-  },
-  {
-    id: 2,
-    user: "ShopFloor_Mike",
-    time: "5 hours ago",
-    question: "Best way to bleed ABS module without a scan tool on a 2015 Silverado? Manual bleeding isn't clearing the pedal.",
-    tag: "Brakes",
-    replies: [
-      { user: "DieselTech_Ray", time: "4 hours ago", text: "Honestly you're not going to get it done right without bidirectional control on the ABS solenoids. Even a cheap Autel will do the automated bleed sequence." },
-      { user: "WrenchHead_Jo", time: "3 hours ago", text: "Gravity bleed with the key off first, then do a manual pedal bleed. Sometimes that's enough to get the air out of the modulator if you're lucky." },
-    ],
-  },
-  {
-    id: 3,
-    user: "LiftBay_Sara",
-    time: "Yesterday",
-    question: "Anyone have a trick for pulling a rounded-off oil drain plug without destroying the pan? Already tried extractor sockets.",
-    tag: "Tips & Tricks",
-    replies: [
-      { user: "ShopFloor_Mike", time: "23 hours ago", text: "Grab a set of Irwin bolt extractors — the reverse-thread kind. Heat the area around the plug with a heat gun first, not a torch. Usually breaks free." },
-      { user: "DieselTech_Ray", time: "22 hours ago", text: "We keep a Gator Grip socket set in the shop just for this. If the head is totally gone, weld a nut on — works every time." },
-      { user: "LiftBay_Sara", time: "21 hours ago", text: "Update: Irwin extractors did it. Thanks guys. Going with a drain plug repair kit so the customer doesn't come back next oil change with the same problem." },
-      { user: "GarageGuru_T", time: "20 hours ago", text: "Good call on the repair kit. FYI — Dorman makes a solid thread repair kit for pans, been using them for years with no comebacks." },
-    ],
-  },
-  {
-    id: 4,
-    user: "WrenchHead_Jo",
-    time: "Yesterday",
-    question: "2020 Jeep Wrangler JL — P0300 random misfire, only shows up under load above 3000 RPM. Plugs and coils already replaced.",
-    tag: "Engine",
-    replies: [
-      { user: "LiftBay_Sara", time: "Yesterday", text: "Check fuel pressure under load — a weak pump will show up exactly like that on the JL. Static pressure can look fine but drop out when you get on it." },
-      { user: "ShopFloor_Mike", time: "Yesterday", text: "Also scope the cam and crank sensors. Had a JL last month with same symptoms — cracked crank sensor causing signal drop at high RPM. No code for the sensor, just the misfire." },
-    ],
-  },
-  {
-    id: 5,
-    user: "GarageGuru_T",
-    time: "2 days ago",
-    question: "What's everyone using for TPMS relearn on late model GMs? My old tool stopped supporting anything past 2022.",
-    tag: "Electrical",
-    replies: [
-      { user: "DieselTech_Ray", time: "2 days ago", text: "ATEQ VT56 has been solid for us. Covers everything through current year and the updates are free for 12 months." },
-      { user: "WrenchHead_Jo", time: "2 days ago", text: "We use the Autel MX-Sensor kit. More expensive upfront but you can program universal sensors right at the counter and the app keeps everything updated." },
-    ],
-  },
-];
-
 export default function App() {
   const [menuOpen, setMenuOpen]                   = useState(false);
   const [fabOpen, setFabOpen]                     = useState(false);
   const [activePage, setActivePage]               = useState('home');
   const [activePostId, setActivePostId]           = useState(null);
-  const [posts, setPosts]                         = useState(SEED_POSTS);
+  const [posts, setPosts]                         = useState([]);
+  const [postsLoading, setPostsLoading]           = useState(false);
   const [showSearchModal, setShowSearchModal]     = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showUploadModal, setShowUploadModal]     = useState(false);
   const [searchText, setSearchText]               = useState('');
+  const [searchResults, setSearchResults]         = useState(null);
   const [questionText, setQuestionText]           = useState('');
   const [uploadFile, setUploadFile]               = useState(null);
   const [searchError, setSearchError]             = useState('');
   const [questionError, setQuestionError]         = useState('');
   const [uploadError, setUploadError]             = useState('');
   const [searchOpen, setSearchOpen]               = useState(false);
+
+  // ── Load posts from API ──────────────────────────
+  const fetchPosts = async () => {
+    setPostsLoading(true);
+    try {
+      const res  = await fetch(`${API}/posts`);
+      const data = await res.json();
+      // API returns reply_count; Community component expects replies array
+      // We'll fetch full post (with replies) only when opening a thread
+      setPosts(data.map(p => ({ ...p, replies: [] })));
+    } catch (err) {
+      console.error('Failed to load posts:', err);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // ── When a thread is opened, load full post with replies ──
+  const handleSetActivePostId = async (id) => {
+    if (!id) { setActivePostId(null); return; }
+    try {
+      const res  = await fetch(`${API}/posts/${id}`);
+      const data = await res.json();
+      setPosts(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));
+      setActivePostId(id);
+    } catch (err) {
+      console.error('Failed to load post:', err);
+      setActivePostId(id);
+    }
+  };
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -112,50 +88,102 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
-  // Called by Post page when a new post is submitted
-  const handleNewPost = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
+  // ── New post submitted from Post page ────────────
+  const handleNewPost = async (newPost) => {
+    try {
+      const res  = await fetch(`${API}/posts`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          user:     newPost.user,
+          question: newPost.question,
+          tag:      newPost.tag,
+        }),
+      });
+      const saved = await res.json();
+      setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
+    } catch (err) {
+      console.error('Failed to save post:', err);
+      // Fall back to optimistic update
+      setPosts(prev => [newPost, ...prev]);
+    }
     setActivePage('community');
   };
 
-  const handleSearchSubmit = async () => {
-    if (!searchText.trim()) { setSearchError('Search cannot be empty.'); return; }
-    if (searchText.length < 3) { setSearchError('Search must be at least 3 characters.'); return; }
+  // ── Add reply ────────────────────────────────────
+  const handleAddReply = async (postId, reply) => {
     try {
-      await fetch('http://localhost:5000/api/search', {
-        method: 'POST',
+      const res  = await fetch(`${API}/posts/${postId}/replies`, {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: searchText }),
+        body:    JSON.stringify({ user: reply.user, text: reply.text }),
       });
-      setShowSearchModal(false);
-      setSearchText('');
+      const saved = await res.json();
+      setPosts(prev =>
+        prev.map(p =>
+          p.id === postId
+            ? { ...p, replies: [...(p.replies || []), saved], reply_count: (p.reply_count || 0) + 1 }
+            : p
+        )
+      );
+    } catch (err) {
+      console.error('Failed to save reply:', err);
+      // Fall back to optimistic update
+      setPosts(prev =>
+        prev.map(p =>
+          p.id === postId
+            ? { ...p, replies: [...(p.replies || []), reply] }
+            : p
+        )
+      );
+    }
+  };
+
+  // ── FAB Search ───────────────────────────────────
+  const handleSearchSubmit = async () => {
+    if (!searchText.trim())        { setSearchError('Search cannot be empty.'); return; }
+    if (searchText.length < 3)     { setSearchError('Search must be at least 3 characters.'); return; }
+    try {
+      const res  = await fetch(`${API}/search`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ query: searchText }),
+      });
+      const data = await res.json();
+      setSearchResults(data.results);
+      setSearchError('');
     } catch {
       setSearchError('Something went wrong. Try again.');
     }
   };
 
+  // ── FAB Question ─────────────────────────────────
   const handleQuestionSubmit = async () => {
-    if (!questionText.trim()) { setQuestionError('Question cannot be empty.'); return; }
-    if (questionText.length < 10) { setQuestionError('Please provide more detail (10+ characters).'); return; }
+    if (!questionText.trim())      { setQuestionError('Question cannot be empty.'); return; }
+    if (questionText.length < 10)  { setQuestionError('Please provide more detail (10+ characters).'); return; }
     try {
-      await fetch('http://localhost:5000/api/question', {
-        method: 'POST',
+      const res  = await fetch(`${API}/posts`, {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: questionText }),
+        body:    JSON.stringify({ user: 'You', question: questionText, tag: 'Other' }),
       });
+      const saved = await res.json();
+      setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
       setShowQuestionModal(false);
       setQuestionText('');
+      navigateTo('community');
     } catch {
       setQuestionError('Something went wrong. Try again.');
     }
   };
 
+  // ── FAB Upload ───────────────────────────────────
   const handleUploadSubmit = async () => {
     if (!uploadFile) { setUploadError('Please select an image.'); return; }
     const formData = new FormData();
     formData.append('photo', uploadFile);
     try {
-      await fetch('http://localhost:5000/api/upload', { method: 'POST', body: formData });
+      await fetch(`${API}/upload`, { method: 'POST', body: formData });
       setShowUploadModal(false);
       setUploadFile(null);
     } catch {
@@ -339,18 +367,11 @@ export default function App() {
         {activePage === 'community' && (
           <Community
             posts={posts}
+            loading={postsLoading}
             activePostId={activePostId}
-            setActivePostId={setActivePostId}
+            setActivePostId={handleSetActivePostId}
             onNewPost={() => navigateTo('post')}
-            onAddReply={(postId, reply) => {
-              setPosts((prev) =>
-                prev.map((p) =>
-                  p.id === postId
-                    ? { ...p, replies: [...p.replies, reply] }
-                    : p
-                )
-              );
-            }}
+            onAddReply={handleAddReply}
           />
         )}
 
@@ -392,21 +413,21 @@ export default function App() {
         <div className="fixed bottom-6 right-6 md:hidden z-50">
           <div className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
             <button
-              onClick={() => setShowSearchModal(true)}
+              onClick={() => { setShowSearchModal(true); setFabOpen(false); }}
               className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
               style={{ backgroundColor: '#1A2535' }}
             >
               <Search className="w-4 h-4" /><span>Search</span>
             </button>
             <button
-              onClick={() => setShowQuestionModal(true)}
+              onClick={() => { setShowQuestionModal(true); setFabOpen(false); }}
               className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
               style={{ backgroundColor: '#1A2535' }}
             >
               <HelpCircle className="w-4 h-4" /><span>Ask a Question</span>
             </button>
             <button
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => { setShowUploadModal(true); setFabOpen(false); }}
               className="flex items-center gap-2 px-3 py-2 rounded border border-garage-border text-garage-text text-sm"
               style={{ backgroundColor: '#1A2535' }}
             >
@@ -423,13 +444,14 @@ export default function App() {
 
         {/* ── SEARCH MODAL ── */}
         {showSearchModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowSearchModal(false)}>
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => { setShowSearchModal(false); setSearchResults(null); setSearchText(''); }}>
             <div className="border border-garage-border p-6 rounded w-11/12 max-w-md" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
               <h2 className="font-condensed font-bold text-xl text-garage-text mb-4">Search</h2>
               <input
                 type="text"
                 value={searchText}
-                onChange={(e) => { setSearchText(e.target.value); setSearchError(''); }}
+                onChange={(e) => { setSearchText(e.target.value); setSearchError(''); setSearchResults(null); }}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                 placeholder="Search issues, codes, or topics..."
                 className="w-full px-3 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
                 style={{ backgroundColor: '#0F1923' }}
@@ -438,6 +460,35 @@ export default function App() {
               <button onClick={handleSearchSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
                 SEARCH
               </button>
+              {/* Search results */}
+              {searchResults !== null && (
+                <div className="mt-4">
+                  {searchResults.length === 0 ? (
+                    <p className="text-garage-muted text-sm text-center py-3">No results found.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {searchResults.map(post => (
+                        <div
+                          key={post.id}
+                          onClick={() => {
+                            setShowSearchModal(false);
+                            setSearchResults(null);
+                            setSearchText('');
+                            handleSetActivePostId(post.id);
+                            navigateTo('community');
+                          }}
+                          className="p-3 rounded border border-garage-border cursor-pointer hover:border-garage-gold transition text-sm"
+                          style={{ backgroundColor: '#0F1923' }}
+                        >
+                          <span className="text-xs text-garage-gold font-condensed font-bold uppercase tracking-wider">{post.tag}</span>
+                          <p className="text-garage-text mt-1 line-clamp-2">{post.question}</p>
+                          <p className="text-garage-muted text-xs mt-1">{post.user} · {post.reply_count} replies</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -480,6 +531,7 @@ export default function App() {
                 }}
                 className="w-full text-garage-muted text-sm"
               />
+              {uploadFile && <p className="text-garage-text text-xs mt-2">Selected: {uploadFile.name}</p>}
               {uploadError && <p className="text-red-400 text-sm mt-2">{uploadError}</p>}
               <button onClick={handleUploadSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
                 UPLOAD
