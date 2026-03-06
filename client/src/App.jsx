@@ -8,6 +8,45 @@ import Post from "./pages/Post";
 
 const API = 'http://localhost:5000/api';
 
+const SEED_POSTS = [
+  {
+    id: 'seed-1',
+    user: 'GarageKing_88',
+    question: 'My 2017 F-150 is throwing a P0420 code. Already replaced the O2 sensors but the light keeps coming back. Anyone dealt with this before?',
+    tag: 'Engine',
+    time: 'Mar 3',
+    replies: [
+      { id: 'r1', user: 'TorqueWrench_T', time: 'Mar 3', text: 'P0420 is almost always the catalytic converter itself, not the O2 sensors. Replacing sensors rarely fixes it. Check if the cat is glowing red hot — dead giveaway.' },
+      { id: 'r2', user: 'ShopFloor_Sal', time: 'Mar 4', text: 'Also worth checking for exhaust leaks before the rear O2 sensor. A small leak can trick the ECU into thinking the cat is failing when it\'s fine.' },
+    ],
+    reply_count: 2,
+  },
+  {
+    id: 'seed-2',
+    user: 'TorqueWrench_T',
+    question: 'Brake pedal goes almost to the floor before it grabs on my 2019 Silverado. Pads and rotors are new. Could this be the master cylinder?',
+    tag: 'Brakes',
+    time: 'Mar 4',
+    replies: [
+      { id: 'r3', user: 'GarageKing_88', time: 'Mar 4', text: 'Did you bench bleed the master cylinder before installing? If not, air in the master is your problem. Also double check all calipers are fully seated.' },
+    ],
+    reply_count: 1,
+  },
+  {
+    id: 'seed-3',
+    user: 'ShopFloor_Sal',
+    question: "AC blows cold for about 10 minutes then starts blowing warm. 2020 Camry. Compressor cycles off and doesn't come back on. Low on refrigerant or something else?",
+    tag: 'AC',
+    time: 'Mar 5',
+    replies: [
+      { id: 'r4', user: 'TorqueWrench_T', time: 'Mar 5', text: 'Classic symptom of low refrigerant causing the low pressure cutoff switch to kick in. Hook up a gauge set and check your pressures first.' },
+      { id: 'r5', user: 'GarageKing_88', time: 'Mar 5', text: 'Could also be the AC relay getting heat soaked. Try swapping it with an identical relay from the fuse box and see if the problem goes away.' },
+      { id: 'r6', user: 'MechDave_99', time: 'Mar 5', text: 'Had the exact same issue on a Camry last month. Turned out to be a failing expansion valve. Low refrigerant is more likely though — start there.' },
+    ],
+    reply_count: 3,
+  },
+];
+
 function MechRelayLogo({ size = 36 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,7 +66,7 @@ export default function App() {
   const [fabOpen, setFabOpen]                     = useState(false);
   const [activePage, setActivePage]               = useState('home');
   const [activePostId, setActivePostId]           = useState(null);
-  const [posts, setPosts]                         = useState([]);
+  const [posts, setPosts]                         = useState(SEED_POSTS);
   const [postsLoading, setPostsLoading]           = useState(false);
   const [showSearchModal, setShowSearchModal]     = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
@@ -41,17 +80,19 @@ export default function App() {
   const [uploadError, setUploadError]             = useState('');
   const [searchOpen, setSearchOpen]               = useState(false);
 
-  // ── Load posts from API ──────────────────────────
+  // ── Load posts from API and merge with seed posts ──
   const fetchPosts = async () => {
     setPostsLoading(true);
     try {
       const res  = await fetch(`${API}/posts`);
       const data = await res.json();
-      // API returns reply_count; Community component expects replies array
-      // We'll fetch full post (with replies) only when opening a thread
-      setPosts(data.map(p => ({ ...p, replies: [] })));
+      const apiPosts = data.map(p => ({ ...p, replies: [] }));
+      // API posts on top, seed posts always at the bottom
+      setPosts([...apiPosts, ...SEED_POSTS]);
     } catch (err) {
       console.error('Failed to load posts:', err);
+      // Fall back to just seed posts if API is down
+      setPosts(SEED_POSTS);
     } finally {
       setPostsLoading(false);
     }
@@ -64,6 +105,13 @@ export default function App() {
   // ── When a thread is opened, load full post with replies ──
   const handleSetActivePostId = async (id) => {
     if (!id) { setActivePostId(null); return; }
+
+    // If it's a seed post, just set it directly — no API call needed
+    if (String(id).startsWith('seed-')) {
+      setActivePostId(id);
+      return;
+    }
+
     try {
       const res  = await fetch(`${API}/posts/${id}`);
       const data = await res.json();
@@ -112,6 +160,18 @@ export default function App() {
 
   // ── Add reply ────────────────────────────────────
   const handleAddReply = async (postId, reply) => {
+    // If it's a seed post, just update locally
+    if (String(postId).startsWith('seed-')) {
+      setPosts(prev =>
+        prev.map(p =>
+          p.id === postId
+            ? { ...p, replies: [...(p.replies || []), { ...reply, id: `local-${Date.now()}` }], reply_count: (p.reply_count || 0) + 1 }
+            : p
+        )
+      );
+      return;
+    }
+
     try {
       const res  = await fetch(`${API}/posts/${postId}/replies`, {
         method:  'POST',
@@ -460,7 +520,6 @@ export default function App() {
               <button onClick={handleSearchSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
                 SEARCH
               </button>
-              {/* Search results */}
               {searchResults !== null && (
                 <div className="mt-4">
                   {searchResults.length === 0 ? (
