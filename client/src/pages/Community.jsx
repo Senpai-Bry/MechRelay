@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 // ── AI Answer Panel ──────────────────────────────────────────────────────────
 function AIAnswerPanel({ question }) {
   const [state, setState] = useState("idle"); // idle | loading | done | error
   const [answer, setAnswer] = useState("");
 
-  const fetchAnswer = async () => {
-    setState("loading");
-    setAnswer("");
+  const fetchAnswer = useCallback(async () => {
+  setState("loading");
+  setAnswer("");
 
-    try {
-      const response = await fetch("http://localhost:5000/api/ai-assist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
+  try {
+    const response = await fetch("http://localhost:5000/api/ai-assist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAnswer(data.answer || "");
-      setState("done");
-    } catch (err) {
-      console.error("AI Assist error:", err);
-      setState("error");
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.error || `HTTP ${response.status}`);
     }
-  };
+
+    const data = await response.json();
+    setAnswer(data.answer || "");
+    setState("done");
+  } catch (err) {
+    console.error("AI Assist error:", err);
+    setState("error");
+  }
+}, [question]);  // <-- fetchAnswer only changes when `question` changes
 
   // Auto-fetch when panel mounts
   useEffect(() => {
-    fetchAnswer();
-  }, [question]);
+  fetchAnswer();
+}, [fetchAnswer]);
 
   return (
     <div className="mb-8 rounded overflow-hidden border border-garage-border" style={{ backgroundColor: '#1A2535' }}>
