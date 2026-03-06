@@ -80,6 +80,69 @@ export default function App() {
   const [uploadError, setUploadError]             = useState('');
   const [searchOpen, setSearchOpen]               = useState(false);
 
+  // ── Auth state ────────────────────────────────────
+  const [currentUser, setCurrentUser]             = useState(() => {
+    const saved = localStorage.getItem('mr_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [authMode, setAuthMode]                   = useState('login'); // 'login' | 'register'
+  const [authEmail, setAuthEmail]                 = useState('');
+  const [authPassword, setAuthPassword]           = useState('');
+  const [authUsername, setAuthUsername]           = useState('');
+  const [authError, setAuthError]                 = useState('');
+  const [authLoading, setAuthLoading]             = useState(false);
+
+  const handleLogin = async () => {
+    if (!authEmail || !authPassword) { setAuthError('Please fill in all fields.'); return; }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: authEmail, password: authPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setAuthError(data.error); return; }
+      const user = { username: data.username, token: data.token };
+      setCurrentUser(user);
+      localStorage.setItem('mr_user', JSON.stringify(user));
+      navigateTo('home');
+    } catch {
+      setAuthError('Something went wrong. Try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!authUsername || !authEmail || !authPassword) { setAuthError('Please fill in all fields.'); return; }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const res  = await fetch(`${API}/auth/register`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ username: authUsername, email: authEmail, password: authPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setAuthError(data.error); return; }
+      const user = { username: data.username, token: data.token };
+      setCurrentUser(user);
+      localStorage.setItem('mr_user', JSON.stringify(user));
+      navigateTo('home');
+    } catch {
+      setAuthError('Something went wrong. Try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('mr_user');
+  };
+
   // ── Load posts from API and merge with seed posts ──
   const fetchPosts = async () => {
     setPostsLoading(true);
@@ -87,11 +150,9 @@ export default function App() {
       const res  = await fetch(`${API}/posts`);
       const data = await res.json();
       const apiPosts = data.map(p => ({ ...p, replies: [] }));
-      // API posts on top, seed posts always at the bottom
       setPosts([...apiPosts, ...SEED_POSTS]);
     } catch (err) {
       console.error('Failed to load posts:', err);
-      // Fall back to just seed posts if API is down
       setPosts(SEED_POSTS);
     } finally {
       setPostsLoading(false);
@@ -105,13 +166,10 @@ export default function App() {
   // ── When a thread is opened, load full post with replies ──
   const handleSetActivePostId = async (id) => {
     if (!id) { setActivePostId(null); return; }
-
-    // If it's a seed post, just set it directly — no API call needed
     if (String(id).startsWith('seed-')) {
       setActivePostId(id);
       return;
     }
-
     try {
       const res  = await fetch(`${API}/posts/${id}`);
       const data = await res.json();
@@ -143,7 +201,7 @@ export default function App() {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          user:     newPost.user,
+          user:     currentUser ? currentUser.username : newPost.user,
           question: newPost.question,
           tag:      newPost.tag,
         }),
@@ -152,7 +210,6 @@ export default function App() {
       setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
     } catch (err) {
       console.error('Failed to save post:', err);
-      // Fall back to optimistic update
       setPosts(prev => [newPost, ...prev]);
     }
     setActivePage('community');
@@ -160,7 +217,6 @@ export default function App() {
 
   // ── Add reply ────────────────────────────────────
   const handleAddReply = async (postId, reply) => {
-    // If it's a seed post, just update locally
     if (String(postId).startsWith('seed-')) {
       setPosts(prev =>
         prev.map(p =>
@@ -171,12 +227,14 @@ export default function App() {
       );
       return;
     }
-
     try {
       const res  = await fetch(`${API}/posts/${postId}/replies`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ user: reply.user, text: reply.text }),
+        body:    JSON.stringify({
+          user: currentUser ? currentUser.username : reply.user,
+          text: reply.text,
+        }),
       });
       const saved = await res.json();
       setPosts(prev =>
@@ -188,7 +246,6 @@ export default function App() {
       );
     } catch (err) {
       console.error('Failed to save reply:', err);
-      // Fall back to optimistic update
       setPosts(prev =>
         prev.map(p =>
           p.id === postId
@@ -225,7 +282,7 @@ export default function App() {
       const res  = await fetch(`${API}/posts`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ user: 'You', question: questionText, tag: 'Other' }),
+        body:    JSON.stringify({ user: currentUser ? currentUser.username : 'Anonymous', question: questionText, tag: 'Other' }),
       });
       const saved = await res.json();
       setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
@@ -257,6 +314,10 @@ export default function App() {
     setActivePage(page);
     setActivePostId(null);
     setMenuOpen(false);
+    setAuthError('');
+    setAuthEmail('');
+    setAuthPassword('');
+    setAuthUsername('');
   };
 
   return (
@@ -320,12 +381,24 @@ export default function App() {
             >
               POST
             </button>
-            <button
-              onClick={() => navigateTo('login')}
-              className="text-sm text-garage-muted hover:text-garage-text transition"
-            >
-              Login
-            </button>
+            {currentUser ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-garage-gold font-condensed font-bold">@{currentUser.username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-garage-muted hover:text-garage-text transition"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigateTo('login')}
+                className="text-sm text-garage-muted hover:text-garage-text transition"
+              >
+                Login
+              </button>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -351,7 +424,7 @@ export default function App() {
                 className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted"
               />
             </div>
-            {['Home', 'How It Works', 'Community', 'About', 'Post', 'Login'].map((item) => (
+            {['Home', 'How It Works', 'Community', 'About', 'Post'].map((item) => (
               <a
                 key={item}
                 href="#"
@@ -361,6 +434,14 @@ export default function App() {
                 {item}
               </a>
             ))}
+            {currentUser ? (
+              <>
+                <p className="text-garage-gold text-sm font-condensed font-bold">@{currentUser.username}</p>
+                <button onClick={handleLogout} className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium">Logout</button>
+              </>
+            ) : (
+              <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }} className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium">Login</a>
+            )}
           </div>
         </div>
       </nav>
@@ -439,31 +520,79 @@ export default function App() {
           <Post onSubmit={handleNewPost} />
         )}
 
-        {/* LOGIN */}
+        {/* ── LOGIN / REGISTER PAGE ── */}
         {activePage === 'login' && (
           <section className="py-20 flex items-center justify-center px-6">
             <div className="p-8 rounded w-full max-w-md border border-garage-border" style={{ backgroundColor: '#1A2535' }}>
+
+              {/* Tab switcher */}
+              <div className="flex mb-6 border border-garage-border rounded overflow-hidden">
+                <button
+                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authMode === 'login' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
+                >
+                  SIGN IN
+                </button>
+                <button
+                  onClick={() => { setAuthMode('register'); setAuthError(''); }}
+                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authMode === 'register' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
+                >
+                  CREATE ACCOUNT
+                </button>
+              </div>
+
               <h2 className="font-condensed font-extrabold text-2xl tracking-wide text-garage-text mb-6 text-center">
-                Sign In to Mech<span className="text-garage-gold">Relay</span>
+                {authMode === 'login' ? <>Sign In to Mech<span className="text-garage-gold">Relay</span></> : <>Join Mech<span className="text-garage-gold">Relay</span></>}
               </h2>
+
+              {/* Username field (register only) */}
+              {authMode === 'register' && (
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={authUsername}
+                  onChange={(e) => { setAuthUsername(e.target.value); setAuthError(''); }}
+                  className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                  style={{ backgroundColor: '#0F1923' }}
+                />
+              )}
+
               <input
                 type="email"
                 placeholder="Email"
+                value={authEmail}
+                onChange={(e) => { setAuthEmail(e.target.value); setAuthError(''); }}
                 className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
                 style={{ backgroundColor: '#0F1923' }}
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full mb-6 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                value={authPassword}
+                onChange={(e) => { setAuthPassword(e.target.value); setAuthError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleRegister())}
+                className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
                 style={{ backgroundColor: '#0F1923' }}
               />
-              <button className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
-                SIGN IN
+
+              {authError && <p className="text-red-400 text-sm mb-3">{authError}</p>}
+
+              <button
+                onClick={authMode === 'login' ? handleLogin : handleRegister}
+                disabled={authLoading}
+                className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition disabled:opacity-50"
+              >
+                {authLoading ? 'LOADING...' : authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
               </button>
+
               <p className="mt-4 text-center text-sm text-garage-muted">
-                Don't have an account?{' '}
-                <a href="#" className="text-garage-gold hover:underline">Sign up</a>
+                {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                <button
+                  onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
+                  className="text-garage-gold hover:underline"
+                >
+                  {authMode === 'login' ? 'Sign up' : 'Sign in'}
+                </button>
               </p>
             </div>
           </section>
