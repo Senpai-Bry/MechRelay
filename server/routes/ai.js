@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// POST ai-assist
 router.post('/', async (req, res) => {
   try {
     const { question } = req.body;
@@ -17,19 +16,27 @@ router.post('/', async (req, res) => {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
+        system: 'You are a professional automotive mechanic assistant. Give clear, practical diagnostic answers in 3-5 numbered steps. Be concise and shop-floor friendly.',
         messages: [
           {
             role: 'user',
-            content: `You are a professional automotive mechanic assistant. A mechanic has posted this question: "${question}". Provide a clear, practical diagnostic answer in 3-5 steps. Be concise and shop-floor friendly.`,
+            content: `A mechanic posted this question: "${question}". Provide a practical diagnostic answer.`,
           },
         ],
       }),
     });
 
+    if (!response.ok) {
+      const err = await response.json();
+      console.error('Anthropic API error:', err);
+      return res.status(500).json({ error: err?.error?.message || 'AI request failed' });
+    }
+
     const data = await response.json();
     const answer = data?.content?.[0]?.text || 'No answer available.';
     res.json({ answer });
   } catch (err) {
+    console.error('AI route error:', err);
     res.status(500).json({ error: err.message });
   }
 });

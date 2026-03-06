@@ -10,7 +10,7 @@ function AIAnswerPanel({ question }) {
     setAnswer("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/ai-assist", {
+      const response = await fetch("http://localhost:5000/api/ai-assist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
