@@ -6,7 +6,7 @@
       "type": "shell",
       "command": "npm run dev",
       "options": {
-        "cwd": "S:/DevProjects/MechRelay/client"
+        "cwd": "C:/DevProjects/Mech-Relay/client"
       },
       "runOptions": {
         "runOn": "folderOpen"

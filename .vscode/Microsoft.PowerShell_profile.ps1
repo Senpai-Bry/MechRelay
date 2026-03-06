@@ -38,19 +38,19 @@ function devprojects {
 
 
 # --- SECTION 3: Run Commands (mechrun) ---
-function mechrun-ui {
+function Start-MechUI {
     Set-Location "S:\DevProjects\MechRelay\client"
     Write-Host "Starting MechRelay UI..." -ForegroundColor Yellow
     npm run dev
 }
 
-function mechrun-api {
+function Start-MechAPI {
     Set-Location "S:\DevProjects\MechRelay\server"
     Write-Host "Starting MechRelay API..." -ForegroundColor Yellow
     npm run dev
 }
 
-function mechrun {
+function Start-MechRelay {
     Write-Host "Which service do you want to run?" -ForegroundColor Cyan
     Write-Host "1) UI" -ForegroundColor Yellow
     Write-Host "2) API" -ForegroundColor Yellow
@@ -59,12 +59,12 @@ function mechrun {
     $choice = Read-Host "Enter 1, 2, or 3"
 
     switch ($choice) {
-        "1" { mechrun-ui }
-        "2" { mechrun-api }
+        "1" { Start-MechUI }
+        "2" { Start-MechAPI }
         "3" { 
             Write-Host "Launching UI + API in split terminals..." -ForegroundColor Green
-            Start-Process powershell -ArgumentList "-NoExit", "-Command", "mechrun-ui"
-            Start-Process powershell -ArgumentList "-NoExit", "-Command", "mechrun-api"
+            Start-Process powershell -ArgumentList "-NoExit", "-Command", "Start-MechUI"
+            Start-Process powershell -ArgumentList "-NoExit", "-Command", "Start-MechAPI"
         }
         default { Write-Host "Invalid choice." -ForegroundColor Red }
     }
@@ -115,10 +115,10 @@ function mechdoctor {
     $clientPath = Join-Path $projectRoot 'client'
 
     # Helpers for checking commands and versions
-    function Get-ToolVersion($exe, $args='--version') {
+    function Get-ToolVersion($exe, $arguments='--version') {
         if (-not (Get-Command $exe -ErrorAction SilentlyContinue)) { return $null }
         try {
-            $out = & $exe $args 2>$null
+            $out = & $exe $arguments 2>$null
             return ($out -split "`n")[0].Trim()
         } catch { return $null }
     }
