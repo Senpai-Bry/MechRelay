@@ -10,6 +10,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Create users table if it doesn't exist
+const Database = require('better-sqlite3');
+const db = new Database('./db/mechrelay.db');
+
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`).run();
+
 // Routes
 const postsRouter = require('./routes/posts');
 app.use('/api/posts', postsRouter);

@@ -381,24 +381,33 @@ export default function App() {
             >
               POST
             </button>
-            {currentUser ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-garage-gold font-condensed font-bold">@{currentUser.username}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-garage-muted hover:text-garage-text transition"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => navigateTo('login')}
-                className="text-sm text-garage-muted hover:text-garage-text transition"
-              >
-                Login
-              </button>
-            )}
+           {currentUser ? (
+  <>
+    <button
+      onClick={() => navigateTo('profile')}
+      className="flex items-center gap-2 px-3 py-2 border border-garage-border rounded text-sm text-garage-muted hover:text-garage-text hover:border-garage-gold transition"
+    >
+      <div className="w-6 h-6 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-xs">
+        {currentUser.username[0].toUpperCase()}
+      </div>
+      <span className="font-condensed font-bold tracking-widest">{currentUser.username}</span>
+    </button>
+    <button
+      onClick={handleLogout}
+      className="text-sm text-garage-muted hover:text-garage-text transition"
+    >
+      Logout
+    </button>
+  </>
+) : (
+  <button
+    onClick={() => navigateTo('login')}
+    className="text-sm text-garage-muted hover:text-garage-text transition"
+  >
+    Login
+  </button>
+)}
+  
           </div>
 
           {/* Mobile Hamburger */}
@@ -519,7 +528,9 @@ export default function App() {
         {activePage === 'post' && (
           <Post onSubmit={handleNewPost} />
         )}
-
+{activePage === 'profile' && currentUser && (
+  <Profile currentUser={currentUser} posts={posts} />
+)}
         {/* ── LOGIN / REGISTER PAGE ── */}
         {activePage === 'login' && (
           <section className="py-20 flex items-center justify-center px-6">
