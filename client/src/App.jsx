@@ -5,7 +5,7 @@ import WhyMechRelay from "./pages/WhyMechRelay";
 import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
-
+import Profile from "./pages/Profile";
 const API = 'http://localhost:5000/api';
 
 const SEED_POSTS = [
