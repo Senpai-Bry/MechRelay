@@ -515,15 +515,17 @@ export default function App() {
         {activePage === 'about'        && <WhyMechRelay />}
 
         {activePage === 'community' && (
-          <Community
-            posts={posts}
-            loading={postsLoading}
-            activePostId={activePostId}
-            setActivePostId={handleSetActivePostId}
-            onNewPost={() => navigateTo('post')}
-            onAddReply={handleAddReply}
-          />
-        )}
+  <Community
+    posts={posts}
+    loading={postsLoading}
+    activePostId={activePostId}
+    setActivePostId={handleSetActivePostId}
+    onNewPost={() => navigateTo('post')}
+    onAddReply={handleAddReply}
+    currentUser={currentUser}
+    onViewProfile={() => navigateTo('profile')}
+  />
+)}
 
         {activePage === 'post' && (
           <Post onSubmit={handleNewPost} />
