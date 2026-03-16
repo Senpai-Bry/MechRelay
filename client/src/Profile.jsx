@@ -1,211 +1,174 @@
 import { useState } from "react";
 
-// ─────────────────────────────────────────────
-// CUSTOM SVG MEDAL ICONS
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// MILITARY-STYLE MEDAL SVGs
+// ─────────────────────────────────────────────────────────────────────────────
 
-function MedalWrenchMaster({ size = 144, owned = true }) {
-  const c = owned ? "#C9A84C" : "#3A4A5A";
-  const shine = owned ? "#FFE08A" : "#4A5A6A";
-  const dark = owned ? "#8A6A20" : "#2A3A4A";
+function Medal({ size = 220, owned = true, g, children }) {
+  const dim      = !owned;
+  const face     = dim ? "#2E3D4E" : g.face;
+  const faceMid  = dim ? "#253040" : g.faceMid;
+  const faceEdge = dim ? "#1A2530" : g.faceEdge;
+  const shine    = dim ? "#3A4A5A" : g.shine;
+  const shadow   = dim ? "#101820" : g.shadow;
+  const stripe   = dim ? "#2A3A4A" : g.stripe;
+  const navy     = dim ? "#1A2535" : "#1C2333";
+  const id       = g.id;
+
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="28" y="4" width="16" height="18" rx="2" fill={owned ? "#B8860B" : "#2A3A4A"} />
-      <rect x="28" y="4" width="7" height="18" rx="2" fill={owned ? "#DAA520" : "#3A4A5A"} />
-      {/* Medal body - hexagon */}
-      <polygon points="36,20 52,29 52,47 36,56 20,47 20,29" fill={c} />
-      <polygon points="36,23 49,31 49,45 36,53 23,45 23,31" fill={dark} />
-      <polygon points="36,26 46,33 46,43 36,50 26,43 26,33" fill={c} />
-      {/* Wrench icon inside */}
-      <path d="M32 38 Q30 34 33 31 L35 33 L37 31 Q40 28 42 30 Q44 32 42 35 L38 39 L40 41 L37 44 L35 42 L31 46 L29 44 Z" fill={shine} strokeWidth="0" />
-      {/* Star accents */}
-      <polygon points="36,28 37,31 40,31 38,33 39,36 36,34 33,36 34,33 32,31 35,31" fill={shine} opacity="0.9" />
+    <svg width={size} height={Math.round(size * 1.25)} viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id={`cg-${id}`} cx="38%" cy="32%" r="65%">
+          <stop offset="0%"   stopColor={shine}    stopOpacity={dim ? 0.4 : 0.9} />
+          <stop offset="45%"  stopColor={face}     stopOpacity="1" />
+          <stop offset="100%" stopColor={faceEdge} stopOpacity="1" />
+        </radialGradient>
+        <radialGradient id={`ig-${id}`} cx="40%" cy="35%" r="60%">
+          <stop offset="0%"   stopColor={faceMid} />
+          <stop offset="100%" stopColor={faceEdge} />
+        </radialGradient>
+      </defs>
+      <rect x="26" y="0" width="28" height="30" fill={navy} />
+      <rect x="26" y="0" width="5"  height="30" fill={stripe} opacity={dim ? 0.3 : 0.55} />
+      <rect x="49" y="0" width="5"  height="30" fill={stripe} opacity={dim ? 0.3 : 0.55} />
+      <rect x="38" y="0" width="4"  height="30" fill={stripe} opacity={dim ? 0.2 : 0.35} />
+      <rect x="26" y="0" width="28" height="2" rx="1" fill={navy} />
+      <rect x="26" y="27" width="28" height="3" fill="#00000035" />
+      <rect x="26" y="0" width="2"  height="30" fill="#00000025" />
+      <rect x="52" y="0" width="2"  height="30" fill="#00000025" />
+      <rect x="34" y="28" width="12" height="8" rx="4" fill={faceEdge} />
+      <rect x="36" y="30" width="8"  height="5" rx="2.5" fill={shadow} />
+      <circle cx="40" cy="69" r="27" fill="#00000050" />
+      <circle cx="40" cy="67" r="27" fill={faceEdge} />
+      <circle cx="40" cy="67" r="24.5" fill={`url(#cg-${id})`} />
+      <circle cx="40" cy="67" r="21"   fill="none" stroke={shadow} strokeWidth="1.2" opacity="0.6" />
+      <circle cx="40" cy="67" r="20"   fill="none" stroke={shine}  strokeWidth="0.5" opacity={dim ? 0.15 : 0.4} />
+      <circle cx="40" cy="67" r="18.5" fill={`url(#ig-${id})`} />
+      <circle cx="40" cy="67" r="18.5" fill="none" stroke={shadow} strokeWidth="0.8" opacity="0.5" />
+      <circle cx="40" cy="67" r="17.5" fill="none" stroke={shine}  strokeWidth="0.4" opacity={dim ? 0.1 : 0.3} />
+      <ellipse cx="32" cy="54" rx="9" ry="5" fill={shine} opacity={dim ? 0.04 : 0.22} transform="rotate(-25,32,54)" />
+      <g stroke={shine} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={dim ? 0.3 : 0.85}>
+        {children}
+      </g>
     </svg>
   );
 }
 
-function MedalDiagnosticPro({ size = 144, owned = true }) {
-  const c = owned ? "#C9A84C" : "#3A4A5A";
-  const shine = owned ? "#FFE08A" : "#4A5A6A";
-  const dark = owned ? "#8A6A20" : "#2A3A4A";
+const PAL = {
+  gold:   { id:"gld", face:"#D4AA50", faceMid:"#A87C28", faceEdge:"#6B4F10", shine:"#FFF0A0", shadow:"#3A2800", stripe:"#D4AA50" },
+  silver: { id:"slv", face:"#C0CAD4", faceMid:"#8A96A4", faceEdge:"#525E68", shine:"#F0F4F8", shadow:"#202830", stripe:"#A0AABC" },
+  bronze: { id:"brz", face:"#D08038", faceMid:"#9A5A18", faceEdge:"#5A3008", shine:"#F8C070", shadow:"#2A1400", stripe:"#D08038" },
+  plat:   { id:"plt", face:"#C8D4E8", faceMid:"#8898B8", faceEdge:"#485878", shine:"#FFFFFF", shadow:"#182840", stripe:"#90A8CC" },
+};
+
+function MedalWrenchMaster({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="28" y="4" width="7" height="18" rx="2" fill={owned ? "#4169E1" : "#2A3A4A"} />
-      <rect x="35" y="4" width="9" height="18" rx="2" fill={owned ? "#1E90FF" : "#3A4A5A"} />
-      {/* Medal - circle with rays */}
-      {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => (
-        <line key={i}
-          x1={36 + 18 * Math.cos(deg * Math.PI / 180)}
-          y1={38 + 18 * Math.sin(deg * Math.PI / 180)}
-          x2={36 + 23 * Math.cos(deg * Math.PI / 180)}
-          y2={38 + 23 * Math.sin(deg * Math.PI / 180)}
-          stroke={shine} strokeWidth="2" strokeLinecap="round" opacity={owned ? 0.8 : 0.3}
-        />
-      ))}
-      <circle cx="36" cy="38" r="17" fill={dark} />
-      <circle cx="36" cy="38" r="14" fill={c} />
-      <circle cx="36" cy="38" r="11" fill={dark} />
-      {/* Circuit / diagnostic lines */}
-      <path d="M29 38 H33 M33 38 V34 H39 V42 H33 M39 38 H43" stroke={shine} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="36" cy="38" r="1.5" fill={shine} />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.gold}>
+      <path d="M33 60 Q31 56 33 53 C34 51 36 51 37 52 L39 54 L43 50 C44 48 47 48 48 50 C49 52 48 54 47 55 L43 59 L45 61 L42 64 L40 62 L36 66 C35 67 33 67 32 66 C31 65 31 63 33 60Z" strokeWidth="1.2" />
+      <path d="M47 60 Q49 56 47 53 C46 51 44 51 43 52 L41 54 L37 50 C36 48 33 48 32 50 C31 52 32 54 33 55 L37 59 L35 61 L38 64 L40 62 L44 66 C45 67 47 67 48 66 C49 65 49 63 47 60Z" strokeWidth="1.2" />
+    </Medal>
   );
 }
 
-function MedalCommunityHero({ size = 144, owned = true }) {
-  const c = owned ? "#E8E8FF" : "#3A4A5A";
-  const shine = owned ? "#FFFFFF" : "#4A5A6A";
-  const dark = owned ? "#9090C0" : "#2A3A4A";
-  const ribbon = owned ? "#7B68EE" : "#2A3A4A";
+function MedalDiagnosticPro({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="29" y="4" width="8" height="8" rx="1" fill={ribbon} />
-      <polygon points="29,12 37,12 40,20 26,20" fill={ribbon} opacity="0.8" />
-      {/* Trophy shape */}
-      <rect x="30" y="52" width="12" height="4" rx="1" fill={c} opacity="0.9" />
-      <rect x="27" y="55" width="18" height="3" rx="1.5" fill={c} />
-      {/* Cup */}
-      <path d="M24 22 Q22 30 24 36 Q27 42 36 44 Q45 42 48 36 Q50 30 48 22 Z" fill={dark} />
-      <path d="M26 22 Q24 30 26 36 Q29 41 36 43 Q43 41 46 36 Q48 30 46 22 Z" fill={c} />
-      {/* Handles */}
-      <path d="M24 26 Q18 26 18 32 Q18 38 24 38" stroke={c} strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M48 26 Q54 26 54 32 Q54 38 48 38" stroke={c} strokeWidth="3" fill="none" strokeLinecap="round" />
-      {/* Star */}
-      <polygon points="36,27 37.5,31.5 42,31.5 38.5,34 40,38.5 36,36 32,38.5 33.5,34 30,31.5 34.5,31.5" fill={owned ? "#7B68EE" : "#2A3A4A"} />
-      <polygon points="36,28 37.2,31.8 41,31.8 38,33.8 39.2,37.5 36,35.5 32.8,37.5 34,33.8 31,31.8 34.8,31.8" fill={shine} />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.silver}>
+      <rect x="30" y="61" width="20" height="12" rx="1.5" strokeWidth="1.4" />
+      <rect x="33" y="58" width="3.5" height="4" rx="1" strokeWidth="1.1" />
+      <rect x="43" y="58" width="3.5" height="4" rx="1" strokeWidth="1.1" />
+      <rect x="27" y="64" width="3.5" height="2.5" rx="0.8" strokeWidth="1" />
+      <rect x="49.5" y="64" width="3.5" height="2.5" rx="0.8" strokeWidth="1" />
+      <polyline points="29,77 33,77 35,73 37,81 39,74 41,77 51,77" strokeWidth="1.3" />
+    </Medal>
   );
 }
 
-function MedalEVSpecialist({ size = 144, owned = true }) {
-  const c = owned ? "#E8E8FF" : "#3A4A5A";
-  const shine = owned ? "#A0F0FF" : "#4A5A6A";
-  const dark = owned ? "#1A3A5A" : "#2A3A4A";
-  const bolt = owned ? "#00CFFF" : "#3A4A5A";
+function MedalCommunityHero({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="28" y="4" width="16" height="18" rx="2" fill={owned ? "#006080" : "#2A3A4A"} />
-      <rect x="34" y="4" width="6" height="18" fill={owned ? "#00CFFF" : "#3A4A5A"} opacity="0.5" />
-      {/* Octagon medal */}
-      <polygon points="36,20 48,24 54,36 48,48 36,52 24,48 18,36 24,24" fill={dark} />
-      <polygon points="36,22 47,26 52,36 47,46 36,50 25,46 20,36 25,26" fill={bolt} opacity="0.2" />
-      <polygon points="36,24 46,28 51,36 46,44 36,48 26,44 21,36 26,28" fill={dark} />
-      {/* Lightning bolt */}
-      <polygon points="39,24 31,37 36,37 33,50 43,35 37,35" fill={shine} />
-      <polygon points="39,26 33,37 37,37 34,48 42,36 37,36" fill={bolt} />
-      {/* Glow ring */}
-      <circle cx="36" cy="36" r="16" stroke={bolt} strokeWidth="1" fill="none" opacity="0.5" strokeDasharray="3 3" />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.silver}>
+      <path d="M40 55 L50 59 L50 68 Q50 75 40 79 Q30 75 30 68 L30 59 Z" strokeWidth="1.4" />
+      <polygon points="40,61 41.8,66.5 47.5,66.5 43,69.8 44.8,75.3 40,72 35.2,75.3 37,69.8 32.5,66.5 38.2,66.5" strokeWidth="1" />
+    </Medal>
   );
 }
 
-function MedalOldSchool({ size = 144, owned = true }) {
-  const c = owned ? "#A8A8A8" : "#3A4A5A";
-  const shine = owned ? "#E8E8E8" : "#4A5A6A";
-  const dark = owned ? "#505050" : "#2A3A4A";
+function MedalEVSpecialist({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon - classic red/white */}
-      <rect x="28" y="4" width="8" height="18" rx="2" fill={owned ? "#8B0000" : "#2A3A4A"} />
-      <rect x="36" y="4" width="8" height="18" rx="2" fill={owned ? "#CC0000" : "#3A4A5A"} />
-      {/* Shield shape */}
-      <path d="M20 24 L36 20 L52 24 L52 40 Q52 52 36 58 Q20 52 20 40 Z" fill={dark} />
-      <path d="M22 25 L36 22 L50 25 L50 40 Q50 51 36 56 Q22 51 22 40 Z" fill={c} />
-      <path d="M24 26 L36 24 L48 26 L48 40 Q48 50 36 54 Q24 50 24 40 Z" fill={dark} />
-      {/* Crossed tools */}
-      <path d="M28 30 L44 46 M28 32 L30 30" stroke={shine} strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M44 30 L28 46 M42 30 L44 32" stroke={shine} strokeWidth="2.5" strokeLinecap="round" />
-      {/* Center bolt */}
-      <circle cx="36" cy="38" r="4" fill={shine} />
-      <circle cx="36" cy="38" r="2.5" fill={dark} />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.plat}>
+      <polygon points="44,54 34,68 40,68 36,80 50,64 44,64" strokeWidth="1.3" />
+      <rect x="46" y="55" width="6" height="4" rx="1" strokeWidth="1.1" />
+      <line x1="48" y1="53" x2="48" y2="55.5" strokeWidth="1.2" />
+      <line x1="51" y1="53" x2="51" y2="55.5" strokeWidth="1.2" />
+    </Medal>
   );
 }
 
-function MedalShopOwner({ size = 144, owned = true }) {
-  const c = owned ? "#A8A8A8" : "#3A4A5A";
-  const shine = owned ? "#E8E8E8" : "#4A5A6A";
-  const dark = owned ? "#505050" : "#2A3A4A";
+function MedalOldSchool({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="30" y="4" width="12" height="18" rx="2" fill={owned ? "#2E4A1E" : "#2A3A4A"} />
-      <rect x="34" y="4" width="4" height="18" fill={owned ? "#4A8A30" : "#3A4A5A"} />
-      {/* Pentagon medal */}
-      <polygon points="36,20 54,33 47,53 25,53 18,33" fill={dark} />
-      <polygon points="36,22 52,34 46,52 26,52 20,34" fill={c} />
-      <polygon points="36,24 50,35 45,51 27,51 22,35" fill={dark} />
-      {/* Building / shop icon */}
-      <rect x="29" y="38" width="14" height="10" fill={shine} rx="1" />
-      <polygon points="29,38 36,29 43,38" fill={shine} />
-      <rect x="33" y="40" width="6" height="8" fill={dark} rx="1" />
-      <rect x="29" y="36" width="14" height="3" fill={c} rx="1" />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.bronze}>
+      <path d="M27 70 Q27 65 32 63 L34 57 L46 57 L48 63 Q53 65 53 70 Z" strokeWidth="1.4" />
+      <path d="M34 63 L35 58 L45 58 L46 63 Z" strokeWidth="1.1" />
+      <circle cx="32" cy="70" r="3.5" strokeWidth="1.3" />
+      <circle cx="48" cy="70" r="3.5" strokeWidth="1.3" />
+      <circle cx="32" cy="70" r="1.2" strokeWidth="1" />
+      <circle cx="48" cy="70" r="1.2" strokeWidth="1" />
+      <line x1="27" y1="66" x2="53" y2="66" strokeWidth="0.9" />
+    </Medal>
   );
 }
 
-function MedalPhotoPro({ size = 144, owned = true }) {
-  const c = owned ? "#CD7F32" : "#3A4A5A";
-  const shine = owned ? "#F4A460" : "#4A5A6A";
-  const dark = owned ? "#7A4010" : "#2A3A4A";
+function MedalShopOwner({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="28" y="4" width="16" height="18" rx="2" fill={owned ? "#7A4010" : "#2A3A4A"} />
-      {/* Circle medal with gear edge */}
-      {[0,22.5,45,67.5,90,112.5,135,157.5,180,202.5,225,247.5,270,292.5,315,337.5].map((deg, i) => (
-        <rect key={i}
-          x="34" y="18" width="4" height="5" rx="1"
-          fill={c}
-          transform={`rotate(${deg} 36 38)`}
-          opacity={owned ? 1 : 0.4}
-        />
-      ))}
-      <circle cx="36" cy="38" r="14" fill={dark} />
-      <circle cx="36" cy="38" r="12" fill={c} />
-      <circle cx="36" cy="38" r="9" fill={dark} />
-      {/* Camera icon */}
-      <rect x="29" y="33" width="14" height="10" rx="2" fill={shine} />
-      <polygon points="29,33 33,29 36,33" fill={shine} />
-      <circle cx="36" cy="38" r="3" fill={dark} />
-      <circle cx="36" cy="38" r="1.5" fill={shine} opacity="0.5" />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.silver}>
+      <rect x="31" y="64" width="18" height="14" rx="1" strokeWidth="1.4" />
+      <path d="M29 64 L40 57 L51 64" strokeWidth="1.4" />
+      <line x1="29" y1="64" x2="51" y2="64" strokeWidth="1" />
+      <rect x="37" y="69" width="6" height="9" rx="0.5" strokeWidth="1.1" />
+      <line x1="34" y1="60" x2="31" y2="64" strokeWidth="0.8" />
+      <line x1="38" y1="58" x2="35" y2="64" strokeWidth="0.8" />
+      <line x1="42" y1="57.5" x2="40" y2="64" strokeWidth="0.8" />
+      <circle cx="50" cy="62" r="2.5" strokeWidth="1.1" />
+      <line x1="52.5" y1="62" x2="57" y2="62" strokeWidth="1.1" />
+      <line x1="55"   y1="62" x2="55" y2="64" strokeWidth="1.1" />
+      <line x1="57"   y1="62" x2="57" y2="60" strokeWidth="1.1" />
+    </Medal>
   );
 }
 
-function MedalFirstPost({ size = 144, owned = true }) {
-  const c = owned ? "#CD7F32" : "#3A4A5A";
-  const shine = owned ? "#F4A460" : "#4A5A6A";
-  const dark = owned ? "#7A4010" : "#2A3A4A";
+function MedalPhotoPro({ size = 220, owned = true }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-      {/* Ribbon */}
-      <rect x="30" y="4" width="6" height="18" rx="2" fill={owned ? "#8B4513" : "#2A3A4A"} />
-      <rect x="36" y="4" width="6" height="18" rx="2" fill={owned ? "#CD7F32" : "#3A4A5A"} />
-      {/* Star medal */}
-      <polygon points="36,20 40,31 52,31 43,38 46,50 36,43 26,50 29,38 20,31 32,31" fill={dark} />
-      <polygon points="36,22 39.5,32 51,32 42,38.5 45,49 36,43 27,49 30,38.5 21,32 32.5,32" fill={c} />
-      <polygon points="36,24 39,33 49,33 41.5,38 44,47.5 36,42.5 28,47.5 30.5,38 23,33 33,33" fill={dark} />
-      {/* Number 1 */}
-      <path d="M34 30 L36 28 L36 44" stroke={shine} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="32" y1="44" x2="40" y2="44" stroke={shine} strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <Medal size={size} owned={owned} g={PAL.bronze}>
+      <rect x="30" y="62" width="20" height="14" rx="2" strokeWidth="1.4" />
+      <path d="M34 62 L36 57 L44 57 L46 62" strokeWidth="1.3" strokeLinejoin="round" />
+      <circle cx="40" cy="69" r="5"   strokeWidth="1.4" />
+      <circle cx="40" cy="69" r="2.5" strokeWidth="1.1" />
+      <circle cx="40" cy="69" r="0.8" fill="currentColor" strokeWidth="0" />
+      <rect x="46" y="63" width="3.5" height="2.5" rx="0.5" strokeWidth="1" />
+      <circle cx="34" cy="59" r="1.2" strokeWidth="0.9" />
+    </Medal>
+  );
+}
+
+function MedalFirstPost({ size = 220, owned = true }) {
+  return (
+    <Medal size={size} owned={owned} g={PAL.bronze}>
+      <rect x="29" y="59" width="22" height="16" rx="2" strokeWidth="1.4" />
+      <path d="M29 61 L40 70 L51 61" strokeWidth="1.3" />
+      <line x1="29" y1="73" x2="36" y2="66" strokeWidth="0.9" />
+      <line x1="51" y1="73" x2="44" y2="66" strokeWidth="0.9" />
+    </Medal>
   );
 }
 
 const BADGE_ICONS = {
-  "wrench-master":  (owned, size) => <MedalWrenchMaster owned={owned} size={size} />,
+  "wrench-master":  (owned, size) => <MedalWrenchMaster  owned={owned} size={size} />,
   "diagnostic-pro": (owned, size) => <MedalDiagnosticPro owned={owned} size={size} />,
   "community-hero": (owned, size) => <MedalCommunityHero owned={owned} size={size} />,
-  "ev-specialist":  (owned, size) => <MedalEVSpecialist owned={owned} size={size} />,
-  "old-school":     (owned, size) => <MedalOldSchool owned={owned} size={size} />,
-  "shop-owner":     (owned, size) => <MedalShopOwner owned={owned} size={size} />,
-  "photo-pro":      (owned, size) => <MedalPhotoPro owned={owned} size={size} />,
-  "first-post":     (owned, size) => <MedalFirstPost owned={owned} size={size} />,
+  "ev-specialist":  (owned, size) => <MedalEVSpecialist  owned={owned} size={size} />,
+  "old-school":     (owned, size) => <MedalOldSchool     owned={owned} size={size} />,
+  "shop-owner":     (owned, size) => <MedalShopOwner     owned={owned} size={size} />,
+  "photo-pro":      (owned, size) => <MedalPhotoPro      owned={owned} size={size} />,
+  "first-post":     (owned, size) => <MedalFirstPost     owned={owned} size={size} />,
 };
 
 // ─────────────────────────────────────────────
@@ -219,33 +182,33 @@ const SPECIALTIES = [
 ];
 
 const BADGES = [
-  { id: "wrench-master",   name: "Wrench Master",   desc: "Completed 50+ job log entries",               tier: "gold",     owned: true  },
-  { id: "diagnostic-pro",  name: "Diagnostic Pro",  desc: "Solved 20+ electrical & diagnostic issues",    tier: "gold",     owned: true  },
-  { id: "community-hero",  name: "Community Hero",  desc: "Top responder in the community feed",          tier: "platinum", owned: false, price: "$4.99" },
-  { id: "ev-specialist",   name: "EV Specialist",   desc: "Certified Hybrid & EV technician badge",       tier: "platinum", owned: false, price: "$4.99" },
-  { id: "old-school",      name: "Old School",      desc: "10+ years in the trade",                      tier: "silver",   owned: true  },
-  { id: "shop-owner",      name: "Shop Owner",      desc: "Verified independent shop owner",             tier: "silver",   owned: false, price: "$2.99" },
-  { id: "photo-pro",       name: "Photo Pro",       desc: "Uploaded 10+ showcase posts",                 tier: "bronze",   owned: false, price: "$1.99" },
-  { id: "first-post",      name: "First Post",      desc: "Posted your first community question",         tier: "bronze",   owned: true  },
+  { id: "wrench-master",  name: "Wrench Master",  desc: "Completed 50+ job log entries",             tier: "gold",     owned: true,  price: null    },
+  { id: "diagnostic-pro", name: "Diagnostic Pro", desc: "Solved 20+ electrical & diagnostic issues", tier: "gold",     owned: true,  price: null    },
+  { id: "community-hero", name: "Community Hero", desc: "Top responder in the community feed",        tier: "platinum", owned: false, price: "$4.99" },
+  { id: "ev-specialist",  name: "EV Specialist",  desc: "Certified Hybrid & EV technician badge",     tier: "platinum", owned: false, price: "$4.99" },
+  { id: "old-school",     name: "Old School",     desc: "10+ years in the trade",                    tier: "silver",   owned: true,  price: null    },
+  { id: "shop-owner",     name: "Shop Owner",     desc: "Verified independent shop owner",           tier: "silver",   owned: false, price: "$2.99" },
+  { id: "photo-pro",      name: "Photo Pro",      desc: "Uploaded 10+ showcase posts",               tier: "bronze",   owned: false, price: "$1.99" },
+  { id: "first-post",     name: "First Post",     desc: "Posted your first community question",       tier: "bronze",   owned: true,  price: null    },
 ];
 
 const TIER_STYLES = {
-  platinum: { border: "#C0C0E0", bg: "#E8E8FF0D", label: "text-purple-300",  glow: "#A0A0FF" },
-  gold:     { border: "#C9A84C", bg: "#C9A84C0D", label: "text-yellow-400",  glow: "#FFD700" },
-  silver:   { border: "#8A95A3", bg: "#8A95A30D", label: "text-gray-300",    glow: "#C0C0C0" },
-  bronze:   { border: "#CD7F32", bg: "#CD7F320D", label: "text-orange-400",  glow: "#CD7F32" },
+  platinum: { border: "#C0C0E0", bg: "#E8E8FF0D", label: "text-purple-300", glow: "#A0A0FF" },
+  gold:     { border: "#C9A84C", bg: "#C9A84C0D", label: "text-yellow-400", glow: "#FFD700" },
+  silver:   { border: "#8A95A3", bg: "#8A95A30D", label: "text-gray-300",   glow: "#C0C0C0" },
+  bronze:   { border: "#CD7F32", bg: "#CD7F320D", label: "text-orange-400", glow: "#CD7F32" },
 };
 
 const MOCK_JOB_LOG = [
-  { id: 1, date: "Mar 8, 2025",  title: "Head Gasket Replacement",            vehicle: "2015 Subaru WRX",   tag: "Engine",       notes: "Full head gasket job, resurfaced head, replaced timing belt and water pump while in there. Customer had been running it hot for weeks.", tools: ["Torque wrench", "Angle gauge", "Head bolt kit", "Plastigage"], hours: 9.5, feedback: "Customer stoked — said it runs better than when they bought it." },
-  { id: 2, date: "Feb 28, 2025", title: "ABS Module Diagnosis & Replacement", vehicle: "2018 Ford F-150",   tag: "Electrical",   notes: "C0031 and C0034 codes. Traced to failing ABS module. Replaced unit, bled brakes, confirmed all four wheel sensors reading correctly.", tools: ["PICO oscilloscope", "Autel MaxiSys", "Brake bleeder kit"], hours: 4.0, feedback: "Smooth — in and out same day." },
-  { id: 3, date: "Feb 14, 2025", title: "Dual Clutch Transmission Service",   vehicle: "2020 VW Golf GTI",  tag: "Transmission", notes: "DSG fluid flush and filter. Customer had been skipping service intervals. Shift hesitation gone after job.", tools: ["VAG-COM", "DSG service kit", "Fluid extractor"], hours: 2.5, feedback: "Left a 5-star review on Google." },
+  { id: 1, date: "Mar 8, 2025",  title: "Head Gasket Replacement",            vehicle: "2015 Subaru WRX",  tag: "Engine",       notes: "Full head gasket job, resurfaced head, replaced timing belt and water pump while in there. Customer had been running it hot for weeks.", tools: ["Torque wrench", "Angle gauge", "Head bolt kit", "Plastigage"], hours: 9.5, feedback: "Customer stoked — said it runs better than when they bought it." },
+  { id: 2, date: "Feb 28, 2025", title: "ABS Module Diagnosis & Replacement", vehicle: "2018 Ford F-150",  tag: "Electrical",   notes: "C0031 and C0034 codes. Traced to failing ABS module. Replaced unit, bled brakes, confirmed all four wheel sensors reading correctly.", tools: ["PICO oscilloscope", "Autel MaxiSys", "Brake bleeder kit"], hours: 4.0, feedback: "Smooth — in and out same day." },
+  { id: 3, date: "Feb 14, 2025", title: "Dual Clutch Transmission Service",   vehicle: "2020 VW Golf GTI", tag: "Transmission", notes: "DSG fluid flush and filter. Customer had been skipping service intervals. Shift hesitation gone after job.", tools: ["VAG-COM", "DSG service kit", "Fluid extractor"], hours: 2.5, feedback: "Left a 5-star review on Google." },
 ];
 
 const MOCK_SHOWCASE = [
-  { id: 1, title: "LS Swap — 1972 Chevy C10",           tag: "Custom Build", placeholder: "🛻", description: "Full LS3 swap into a resto-mod C10. Custom mounts, E-rod harness, 4L65E trans. Took 3 weekends." },
-  { id: 2, title: "Brake Caliper Rebuild — Porsche 911", tag: "Brakes",       placeholder: "🔴", description: "Factory Brembo 6-piston rebuild. New pistons, seals, stainless hardware. Painted Porsche red." },
-  { id: 3, title: "Wiring Harness Repair — Boat Trailer",tag: "Electrical",   placeholder: "⚡", description: "Complete rewire of a 24ft trailer. Corrosion had taken out half the lights. New 7-pin harness." },
+  { id: 1, title: "LS Swap — 1972 Chevy C10",            tag: "Custom Build", placeholder: "🛻", description: "Full LS3 swap into a resto-mod C10. Custom mounts, E-rod harness, 4L65E trans. Took 3 weekends." },
+  { id: 2, title: "Brake Caliper Rebuild — Porsche 911",  tag: "Brakes",       placeholder: "🔴", description: "Factory Brembo 6-piston rebuild. New pistons, seals, stainless hardware. Painted Porsche red." },
+  { id: 3, title: "Wiring Harness Repair — Boat Trailer", tag: "Electrical",   placeholder: "⚡", description: "Complete rewire of a 24ft trailer. Corrosion had taken out half the lights. New 7-pin harness." },
 ];
 
 const MOCK_ENDORSEMENTS = [
@@ -257,36 +220,20 @@ const MOCK_ENDORSEMENTS = [
 ];
 
 const MOCK_RECOMMENDATIONS = [
-  {
-    id: 1,
-    author: "Carlos M.",
-    role: "Shop Manager — Rivera Auto, Houston TX",
-    avatar: "C",
-    text: "One of the sharpest diagnosticians I've had in my shop. Never guesses — always traces the fault. Customers ask for him by name.",
-    verified: true,
-    date: "Feb 2025",
-  },
-  {
-    id: 2,
-    author: "James T.",
-    role: "Owner — Turbo Tech Garage, Austin TX",
-    avatar: "J",
-    text: "Solid work ethic, clean bay, zero comebacks in 2 years. Would rehire without hesitation.",
-    verified: true,
-    date: "Jan 2025",
-  },
+  { id: 1, author: "Carlos M.", role: "Shop Manager — Rivera Auto, Houston TX", avatar: "C", text: "One of the sharpest diagnosticians I've had in my shop. Never guesses — always traces the fault. Customers ask for him by name.", verified: true, date: "Feb 2025" },
+  { id: 2, author: "James T.",  role: "Owner — Turbo Tech Garage, Austin TX",   avatar: "J", text: "Solid work ethic, clean bay, zero comebacks in 2 years. Would rehire without hesitation.",                                      verified: true, date: "Jan 2025" },
 ];
 
 const MOCK_CERTIFICATIONS = [
-  { id: 1, name: "ASE Master Technician",         issuer: "ASE",          year: 2021, verified: true  },
-  { id: 2, name: "Toyota T-TEN Certified",         issuer: "Toyota",       year: 2019, verified: true  },
-  { id: 3, name: "EV & Hybrid Safety Cert",        issuer: "NASTF",        year: 2023, verified: false },
-  { id: 4, name: "Bosch Fuel Systems Specialist",  issuer: "Bosch",        year: 2022, verified: false },
+  { id: 1, name: "ASE Master Technician",        issuer: "ASE",    year: 2021, verified: true  },
+  { id: 2, name: "Toyota T-TEN Certified",        issuer: "Toyota", year: 2019, verified: true  },
+  { id: 3, name: "EV & Hybrid Safety Cert",       issuer: "NASTF",  year: 2023, verified: false },
+  { id: 4, name: "Bosch Fuel Systems Specialist", issuer: "Bosch",  year: 2022, verified: false },
 ];
 
 const HELPFUL_REACTIONS = [
-  { user: "TorqueWrench_T", post: "P0420 diagnosis tip", time: "Mar 8" },
-  { user: "ShopFloor_Sal",  post: "ABS bleed procedure", time: "Mar 5" },
+  { user: "TorqueWrench_T", post: "P0420 diagnosis tip",     time: "Mar 8"  },
+  { user: "ShopFloor_Sal",  post: "ABS bleed procedure",     time: "Mar 5"  },
   { user: "MechDave_99",    post: "DSG service walkthrough", time: "Feb 28" },
   { user: "GarageKing_88",  post: "Subaru head gasket tips", time: "Feb 20" },
 ];
@@ -337,35 +284,29 @@ function BadgeCard({ badge, onBuy }) {
   const IconFn = BADGE_ICONS[badge.id];
   return (
     <div
-      className={`relative p-5 rounded-lg border flex flex-col items-center text-center gap-3 transition-all duration-200 ${badge.owned ? "" : "opacity-50 hover:opacity-80"}`}
-      style={{ borderColor: style.border, backgroundColor: style.bg, boxShadow: badge.owned ? `0 0 18px ${style.glow}22` : "none" }}
+      className={`relative pt-8 pb-6 px-6 rounded-lg border flex flex-col items-center text-center gap-4 transition-all duration-200 ${badge.owned ? "" : "opacity-50 hover:opacity-75"}`}
+      style={{ borderColor: style.border, backgroundColor: style.bg, boxShadow: badge.owned ? `0 0 32px ${style.glow}30` : "none" }}
     >
-      {/* Tier ribbon */}
       <div className="absolute top-0 left-0 right-0 flex justify-center">
         <span className={`text-[9px] font-condensed font-extrabold tracking-[0.2em] uppercase px-3 py-0.5 rounded-b ${style.label}`}
           style={{ backgroundColor: style.bg, borderLeft: `1px solid ${style.border}`, borderRight: `1px solid ${style.border}`, borderBottom: `1px solid ${style.border}` }}>
           {badge.tier}
         </span>
       </div>
-
-      {/* Medal icon */}
-      <div className="mt-4">
-        {IconFn ? IconFn(badge.owned, 144) : <div className="w-[144px] h-[144px]" />}
+      <div className="flex items-center justify-center" style={{ width: 220, height: 275 }}>
+        {IconFn ? IconFn(badge.owned, 220) : <div style={{ width: 220, height: 275 }} />}
       </div>
-
       <div>
-        <p className="font-condensed font-extrabold text-sm text-garage-text leading-tight">{badge.name}</p>
-        <p className="text-xs text-garage-muted leading-snug mt-1">{badge.desc}</p>
+        <p className="font-condensed font-extrabold text-base text-garage-text leading-tight tracking-wide">{badge.name}</p>
+        <p className="text-xs text-garage-muted leading-snug mt-1.5 max-w-[180px] mx-auto">{badge.desc}</p>
       </div>
-
       {badge.owned ? (
         <span className="text-xs font-condensed font-bold tracking-widest text-green-400 flex items-center gap-1">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#4ADE80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           OWNED
         </span>
       ) : (
-        <button onClick={() => onBuy(badge)}
-          className="px-4 py-1.5 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition w-full">
+        <button onClick={() => onBuy(badge)} className="px-6 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition w-full">
           BUY {badge.price}
         </button>
       )}
@@ -430,8 +371,17 @@ function ShowcaseCard({ item }) {
   );
 }
 
+function VerifiedBadge() {
+  return (
+    <span className="flex items-center gap-1 text-[10px] font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border border-blue-500 text-blue-400" style={{ backgroundColor: "#1E40AF18" }}>
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4L3 6L7 2" stroke="#60A5FA" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      VERIFIED
+    </span>
+  );
+}
+
 // ─────────────────────────────────────────────
-// MAIN
+// MAIN PROFILE COMPONENT
 // ─────────────────────────────────────────────
 
 export default function Profile({ currentUser, posts = [] }) {
@@ -461,23 +411,25 @@ export default function Profile({ currentUser, posts = [] }) {
   const handleBuy = (badge) => { setOwnedBadges(prev => [...prev, badge.id]); setBuyModal(null); };
 
   const TABS = [
-    { key: "overview",    label: "Overview"    },
-    { key: "joblog",      label: "Job Log"     },
-    { key: "showcase",    label: "Showcase"    },
-    { key: "badges",      label: "Badges"      },
-    { key: "reputation",  label: "Reputation"  },
-    { key: "posts",       label: "Posts"       },
+    { key: "overview",   label: "Overview"   },
+    { key: "joblog",     label: "Job Log"    },
+    { key: "showcase",   label: "Showcase"   },
+    { key: "badges",     label: "Badges"     },
+    { key: "reputation", label: "Reputation" },
+    { key: "posts",      label: "Posts"      },
   ];
 
   return (
     <div className="min-h-screen bg-garage-bg">
-      {/* Hero */}
+
+      {/* Hero banner */}
       <div className="relative h-36 border-b border-garage-border overflow-hidden" style={{ backgroundColor: "#0F1923" }}>
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#2A3A50 1px, transparent 1px), linear-gradient(90deg, #2A3A50 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-garage-gold opacity-40" />
       </div>
 
       <div className="max-w-4xl mx-auto px-6">
+
         {/* Avatar row */}
         <div className="flex items-end justify-between -mt-12 mb-6">
           <div className="relative">
@@ -543,19 +495,28 @@ export default function Profile({ currentUser, posts = [] }) {
           <div className="mb-6">
             <h1 className="font-condensed font-extrabold text-3xl text-garage-text tracking-tight">@{display.username || currentUser?.username}</h1>
             <div className="flex flex-wrap items-center gap-4 mt-2">
-              {display.location && <span className="flex items-center gap-1.5 text-sm text-garage-muted"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1C4.07 1 2.5 2.57 2.5 4.5C2.5 7.25 6 11 6 11C6 11 9.5 7.25 9.5 4.5C9.5 2.57 7.93 1 6 1ZM6 6C5.17 6 4.5 5.33 4.5 4.5C4.5 3.67 5.17 3 6 3C6.83 3 7.5 3.67 7.5 4.5C7.5 5.33 6.83 6 6 6Z" fill="currentColor"/></svg>{display.location}</span>}
-              {display.yearsExp && <span className="flex items-center gap-1.5 text-sm text-garage-muted"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.3"/><path d="M6 3.5V6.5L8 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>{display.yearsExp} experience</span>}
-              <span className="flex items-center gap-1.5 text-sm text-garage-muted"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2.5" width="9" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 5.5h9" stroke="currentColor" strokeWidth="1.3"/></svg>{userPosts.length} posts</span>
-              {/* Mini medal row */}
-              <div className="flex items-center gap-2">
-                {BADGES.filter(b => ownedBadges.includes(b.id)).slice(0, 4).map(b => (
-                  <div key={b.id} title={b.name} className="w-6 h-6">{BADGE_ICONS[b.id]?.(true, 24)}</div>
-                ))}
-              </div>
+              {display.location && (
+                <span className="flex items-center gap-1.5 text-sm text-garage-muted">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1C4.07 1 2.5 2.57 2.5 4.5C2.5 7.25 6 11 6 11S9.5 7.25 9.5 4.5C9.5 2.57 7.93 1 6 1ZM6 6C5.17 6 4.5 5.33 4.5 4.5S5.17 3 6 3 7.5 3.67 7.5 4.5 6.83 6 6 6Z" fill="currentColor"/></svg>
+                  {display.location}
+                </span>
+              )}
+              {display.yearsExp && (
+                <span className="flex items-center gap-1.5 text-sm text-garage-muted">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.3"/><path d="M6 3.5V6.5L8 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                  {display.yearsExp} experience
+                </span>
+              )}
+              <span className="flex items-center gap-1.5 text-sm text-garage-muted">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2.5" width="9" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 5.5h9" stroke="currentColor" strokeWidth="1.3"/></svg>
+                {userPosts.length} posts
+              </span>
             </div>
             {display.specialties.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
-                {display.specialties.map(s => <span key={s} className="px-3 py-1 rounded text-xs font-condensed font-bold tracking-widest uppercase border border-garage-gold text-garage-gold" style={{ backgroundColor: "#C9A84C18" }}>{s}</span>)}
+                {display.specialties.map(s => (
+                  <span key={s} className="px-3 py-1 rounded text-xs font-condensed font-bold tracking-widest uppercase border border-garage-gold text-garage-gold" style={{ backgroundColor: "#C9A84C18" }}>{s}</span>
+                ))}
               </div>
             )}
             {!display.location && !display.yearsExp && display.specialties.length === 0 && (
@@ -566,18 +527,55 @@ export default function Profile({ currentUser, posts = [] }) {
 
         <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
-        {/* OVERVIEW */}
+        {/* ── OVERVIEW ── */}
         {activeTab === "overview" && (
           <div className="space-y-8 pb-16">
+
+            {/* Stats grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: "Jobs Logged",    value: MOCK_JOB_LOG.length },
                 { label: "Hours Billed",   value: MOCK_JOB_LOG.reduce((a, j) => a + j.hours, 0) },
                 { label: "Showcase Items", value: MOCK_SHOWCASE.length },
                 { label: "Badges Earned",  value: ownedBadges.length },
-              ].map(s => <Card key={s.label} className="p-5 text-center"><p className="font-condensed font-extrabold text-3xl text-garage-gold">{s.value}</p><p className="text-xs text-garage-muted mt-1 font-condensed tracking-widest uppercase">{s.label}</p></Card>)}
+              ].map(s => (
+                <Card key={s.label} className="p-5 text-center">
+                  <p className="font-condensed font-extrabold text-3xl text-garage-gold">{s.value}</p>
+                  <p className="text-xs text-garage-muted mt-1 font-condensed tracking-widest uppercase">{s.label}</p>
+                </Card>
+              ))}
             </div>
-            <div><SectionLabel>Recent Jobs</SectionLabel><div className="space-y-2">{MOCK_JOB_LOG.slice(0, 2).map(job => <JobEntry key={job.id} job={job} />)}</div></div>
+
+            {/* Badges earned */}
+            {ownedBadges.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <SectionLabel>Badges Earned</SectionLabel>
+                  <span className="text-xs text-garage-muted font-condensed tracking-widest">{ownedBadges.length} / {BADGES.length}</span>
+                </div>
+                <div className="flex flex-wrap gap-6 px-2">
+                  {BADGES.filter(b => ownedBadges.includes(b.id)).map(b => {
+                    const style = TIER_STYLES[b.tier];
+                    return (
+                      <div key={b.id} className="flex flex-col items-center gap-2" title={b.name}>
+                        <div style={{ width: 80, height: 100 }}>
+                          {BADGE_ICONS[b.id]?.(true, 80)}
+                        </div>
+                        <p className="text-[10px] font-condensed font-bold tracking-widest uppercase text-center" style={{ color: style.border }}>{b.name}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Recent jobs */}
+            <div>
+              <SectionLabel>Recent Jobs</SectionLabel>
+              <div className="space-y-2">{MOCK_JOB_LOG.slice(0, 2).map(job => <JobEntry key={job.id} job={job} />)}</div>
+            </div>
+
+            {/* Reputation highlights */}
             <div>
               <SectionLabel>Reputation Highlights</SectionLabel>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -598,48 +596,61 @@ export default function Profile({ currentUser, posts = [] }) {
                 </div>
               </div>
             </div>
-            <div><SectionLabel>Recent Showcase</SectionLabel><div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{MOCK_SHOWCASE.slice(0, 2).map(item => <ShowcaseCard key={item.id} item={item} />)}</div></div>
+
+            {/* Recent showcase */}
+            <div>
+              <SectionLabel>Recent Showcase</SectionLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{MOCK_SHOWCASE.slice(0, 2).map(item => <ShowcaseCard key={item.id} item={item} />)}</div>
+            </div>
+
           </div>
         )}
 
-        {/* JOB LOG */}
+        {/* ── JOB LOG ── */}
         {activeTab === "joblog" && (
           <div className="pb-16">
-            <div className="flex items-center justify-between mb-4"><SectionLabel>Job Log</SectionLabel><button className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">+ ADD ENTRY</button></div>
+            <div className="flex items-center justify-between mb-4">
+              <SectionLabel>Job Log</SectionLabel>
+              <button className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">+ ADD ENTRY</button>
+            </div>
             <div className="space-y-2">{MOCK_JOB_LOG.map(job => <JobEntry key={job.id} job={job} />)}</div>
           </div>
         )}
 
-        {/* SHOWCASE */}
+        {/* ── SHOWCASE ── */}
         {activeTab === "showcase" && (
           <div className="pb-16">
-            <div className="flex items-center justify-between mb-4"><SectionLabel>Work Showcase</SectionLabel><button className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">+ ADD WORK</button></div>
+            <div className="flex items-center justify-between mb-4">
+              <SectionLabel>Work Showcase</SectionLabel>
+              <button className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">+ ADD WORK</button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{MOCK_SHOWCASE.map(item => <ShowcaseCard key={item.id} item={item} />)}</div>
           </div>
         )}
 
-        {/* BADGES */}
+        {/* ── BADGES ── */}
         {activeTab === "badges" && (
           <div className="pb-16">
             <SectionLabel>Badges</SectionLabel>
-            <p className="text-xs text-garage-muted -mt-3 mb-5">Earn or purchase badges to display on your profile.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {BADGES.map(badge => <BadgeCard key={badge.id} badge={{ ...badge, owned: ownedBadges.includes(badge.id) }} onBuy={setBuyModal} />)}
+            <p className="text-xs text-garage-muted -mt-3 mb-6">Earn or purchase badges to display on your profile.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {BADGES.map(badge => (
+                <BadgeCard key={badge.id} badge={{ ...badge, owned: ownedBadges.includes(badge.id) }} onBuy={setBuyModal} />
+              ))}
             </div>
           </div>
         )}
 
-        {/* REPUTATION */}
+        {/* ── REPUTATION ── */}
         {activeTab === "reputation" && (
           <div className="pb-16 space-y-10">
 
-            {/* ── Reputation score ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: "Endorsements",   value: MOCK_ENDORSEMENTS.reduce((a, e) => a + e.count, 0) },
-                { label: "Helpful Votes",  value: HELPFUL_REACTIONS.length },
-                { label: "Recommendations",value: MOCK_RECOMMENDATIONS.length },
-                { label: "Certifications", value: MOCK_CERTIFICATIONS.length },
+                { label: "Endorsements",    value: MOCK_ENDORSEMENTS.reduce((a, e) => a + e.count, 0) },
+                { label: "Helpful Votes",   value: HELPFUL_REACTIONS.length },
+                { label: "Recommendations", value: MOCK_RECOMMENDATIONS.length },
+                { label: "Certifications",  value: MOCK_CERTIFICATIONS.length },
               ].map(s => (
                 <Card key={s.label} className="p-5 text-center">
                   <p className="font-condensed font-extrabold text-3xl text-garage-gold">{s.value}</p>
@@ -648,26 +659,22 @@ export default function Profile({ currentUser, posts = [] }) {
               ))}
             </div>
 
-            {/* ── Skill endorsements ── */}
             <div>
               <SectionLabel>Skill Endorsements</SectionLabel>
               <div className="space-y-2">
                 {MOCK_ENDORSEMENTS.map(e => (
                   <div key={e.id} className="flex items-center justify-between px-5 py-4 rounded border border-garage-border hover:border-garage-gold transition" style={{ backgroundColor: "#1A2535" }}>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0">
-                        {e.avatar}
-                      </div>
+                      <div className="w-8 h-8 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0">{e.avatar}</div>
                       <div>
                         <p className="text-sm font-semibold text-garage-text">{e.from}</p>
                         <p className="text-xs text-garage-muted">endorsed you for <span className="text-garage-gold font-bold">{e.specialty}</span></p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* endorsement bar */}
                       <div className="hidden sm:flex items-center gap-1">
                         {Array.from({ length: Math.min(e.count, 15) }).map((_, i) => (
-                          <div key={i} className="w-1.5 h-4 rounded-sm bg-garage-gold opacity-80" style={{ opacity: 0.4 + (i / 15) * 0.6 }} />
+                          <div key={i} className="w-1.5 h-4 rounded-sm bg-garage-gold" style={{ opacity: 0.4 + (i / 15) * 0.6 }} />
                         ))}
                       </div>
                       <span className="text-sm font-condensed font-extrabold text-garage-gold ml-1">{e.count}</span>
@@ -680,25 +687,17 @@ export default function Profile({ currentUser, posts = [] }) {
               </button>
             </div>
 
-            {/* ── Shop manager recommendations ── */}
             <div>
               <SectionLabel>Shop Recommendations</SectionLabel>
               <div className="space-y-4">
                 {MOCK_RECOMMENDATIONS.map(r => (
                   <div key={r.id} className="p-5 rounded border border-garage-border" style={{ backgroundColor: "#1A2535" }}>
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-garage-surface2 border border-garage-border flex items-center justify-center text-garage-gold font-condensed font-extrabold shrink-0">
-                        {r.avatar}
-                      </div>
+                      <div className="w-10 h-10 rounded-full bg-garage-surface2 border border-garage-border flex items-center justify-center text-garage-gold font-condensed font-extrabold shrink-0">{r.avatar}</div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-sm text-garage-text">{r.author}</span>
-                          {r.verified && (
-                            <span className="flex items-center gap-1 text-[10px] font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border border-blue-500 text-blue-400" style={{ backgroundColor: "#1E40AF18" }}>
-                              <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4L3 6L7 2" stroke="#60A5FA" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                              VERIFIED
-                            </span>
-                          )}
+                          {r.verified && <VerifiedBadge />}
                           <span className="text-xs text-garage-muted ml-auto">{r.date}</span>
                         </div>
                         <p className="text-xs text-garage-gold mb-2">{r.role}</p>
@@ -713,7 +712,6 @@ export default function Profile({ currentUser, posts = [] }) {
               </button>
             </div>
 
-            {/* ── Certifications ── */}
             <div>
               <SectionLabel>Certifications</SectionLabel>
               <div className="space-y-2">
@@ -730,14 +728,10 @@ export default function Profile({ currentUser, posts = [] }) {
                         <p className="text-xs text-garage-muted">{cert.issuer} · {cert.year}</p>
                       </div>
                     </div>
-                    {cert.verified ? (
-                      <span className="flex items-center gap-1 text-[10px] font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border border-blue-500 text-blue-400" style={{ backgroundColor: "#1E40AF18" }}>
-                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4L3 6L7 2" stroke="#60A5FA" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        VERIFIED
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border border-garage-border text-garage-muted">PENDING</span>
-                    )}
+                    {cert.verified
+                      ? <VerifiedBadge />
+                      : <span className="text-[10px] font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border border-garage-border text-garage-muted">PENDING</span>
+                    }
                   </div>
                 ))}
               </div>
@@ -746,7 +740,6 @@ export default function Profile({ currentUser, posts = [] }) {
               </button>
             </div>
 
-            {/* ── Helpful reactions ── */}
             <div>
               <SectionLabel>Helpful Reactions Received</SectionLabel>
               <div className="space-y-2">
@@ -767,33 +760,36 @@ export default function Profile({ currentUser, posts = [] }) {
           </div>
         )}
 
-
+        {/* ── POSTS ── */}
         {activeTab === "posts" && (
           <div className="pb-16">
             <SectionLabel>Questions Posted</SectionLabel>
             {userPosts.length === 0 ? (
               <Card className="p-8 text-center"><p className="text-garage-muted text-sm">No posts yet.</p></Card>
             ) : (
-              <div className="space-y-3">{userPosts.map(post => (
-                <Card key={post.id} className="p-5 hover:border-garage-gold transition cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold border border-garage-gold px-2 py-0.5 rounded" style={{ backgroundColor: "#C9A84C18" }}>{post.tag}</span>
-                    <span className="text-xs text-garage-muted">{post.time}</span>
-                  </div>
-                  <p className="text-garage-text text-sm leading-relaxed line-clamp-2">{post.question}</p>
-                  <p className="text-garage-muted text-xs mt-2">{post.reply_count ?? post.replies?.length ?? 0} replies</p>
-                </Card>
-              ))}</div>
+              <div className="space-y-3">
+                {userPosts.map(post => (
+                  <Card key={post.id} className="p-5 hover:border-garage-gold transition cursor-pointer">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold border border-garage-gold px-2 py-0.5 rounded" style={{ backgroundColor: "#C9A84C18" }}>{post.tag}</span>
+                      <span className="text-xs text-garage-muted">{post.time}</span>
+                    </div>
+                    <p className="text-garage-text text-sm leading-relaxed line-clamp-2">{post.question}</p>
+                    <p className="text-garage-muted text-xs mt-2">{post.reply_count ?? post.replies?.length ?? 0} replies</p>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         )}
+
       </div>
 
       {/* Buy modal */}
       {buyModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6" onClick={() => setBuyModal(null)}>
           <div className="w-full max-w-sm p-8 rounded border border-garage-border text-center" style={{ backgroundColor: "#1A2535" }} onClick={e => e.stopPropagation()}>
-            <div className="flex justify-center mb-4">{BADGE_ICONS[buyModal.id]?.(false, 144)}</div>
+            <div className="flex justify-center mb-4">{BADGE_ICONS[buyModal.id]?.(false, 220)}</div>
             <h3 className="font-condensed font-extrabold text-xl text-garage-text mb-1">{buyModal.name}</h3>
             <p className="text-sm text-garage-muted mb-6">{buyModal.desc}</p>
             <div className="flex gap-3">
@@ -804,6 +800,7 @@ export default function Profile({ currentUser, posts = [] }) {
           </div>
         </div>
       )}
+
     </div>
   );
 }
