@@ -33,12 +33,12 @@ router.get('/:id', (req, res) => {
 // POST new post
 router.post('/', (req, res) => {
   try {
-    const { user, question, tag } = req.body;
+    const { user, question, tag, photo } = req.body;  // ← add photo
     if (!user || !question) return res.status(400).json({ error: 'User and question are required' });
     const time = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const result = db.prepare(
-      'INSERT INTO posts (user, question, tag, time) VALUES (?, ?, ?, ?)'
-    ).run(user, question, tag || 'General', time);
+      'INSERT INTO posts (user, question, tag, time, photo) VALUES (?, ?, ?, ?, ?)'  // ← add photo
+    ).run(user, question, tag || 'General', time, photo ?? null);  // ← add photo
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json({ ...post, replies: [], reply_count: 0 });
   } catch (err) {

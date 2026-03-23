@@ -194,26 +194,27 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
-  // ── New post submitted from Post page ────────────
-  const handleNewPost = async (newPost) => {
-    try {
-      const res  = await fetch(`${API}/posts`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          user:     currentUser ? currentUser.username : newPost.user,
-          question: newPost.question,
-          tag:      newPost.tag,
-        }),
-      });
-      const saved = await res.json();
-      setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
-    } catch (err) {
-      console.error('Failed to save post:', err);
-      setPosts(prev => [newPost, ...prev]);
-    }
-    setActivePage('community');
-  };
+// ── New post submitted from Post page ────────────
+const handleNewPost = async (newPost) => {
+  try {
+    const res = await fetch(`${API}/posts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: currentUser ? currentUser.username : newPost.user,
+        question: newPost.question,
+        tag: newPost.tag,
+        photo: newPost.photo ?? null,   // ← add this line
+      }),
+    });
+    const saved = await res.json();
+    setPosts(prev => [{ ...saved, replies: [], photo: newPost.photo ?? null }, ...prev]);
+  } catch (err) {
+    console.error('Failed to save post:', err);
+    setPosts(prev => [newPost, ...prev]);
+  }
+  setActivePage('community');
+};
 
   // ── Add reply ────────────────────────────────────
   const handleAddReply = async (postId, reply) => {

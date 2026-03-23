@@ -188,6 +188,14 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
               <span className="text-xs px-2 py-1 border border-garage-border text-garage-muted rounded font-medium uppercase tracking-wider">{activePost.tag}</span>
             </div>
             <p className="text-garage-text leading-relaxed">{activePost.question}</p>
+
+{activePost.photo && (
+  <img
+    src={`http://localhost:5000${activePost.photo}`}
+    alt="Post attachment"
+    className="mt-4 rounded border border-garage-border max-h-96 object-cover w-full"
+  />
+)}
           </div>
 
           {/* AI Panel */}

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { Camera } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Camera, X } from "lucide-react";
 
+const API = "http://localhost:5000/api";
 const tags = ["Engine", "Brakes", "Diesel", "Electrical", "Transmission", "Suspension", "Tips & Tricks", "Other"];
 
 export default function Post({ onSubmit }) {
@@ -8,10 +9,46 @@ export default function Post({ onSubmit }) {
   const [postText, setPostText]       = useState('');
   const [postError, setPostError]     = useState('');
   const [submitted, setSubmitted]     = useState(false);
+  const [photoFile, setPhotoFile]     = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploading, setUploading]     = useState(false);
+  const fileInputRef = useRef();
 
-  const handleSubmit = () => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const clearPhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    fileInputRef.current.value = '';
+  };
+
+  const handleSubmit = async () => {
     if (!postText.trim()) { setPostError('Please describe the issue.'); return; }
     if (postText.length < 10) { setPostError('Please provide more detail (10+ characters).'); return; }
+
+    setUploading(true);
+
+    let photoUrl = null;
+
+    // If a photo was selected, upload it first
+    if (photoFile) {
+      try {
+        const formData = new FormData();
+        formData.append('photo', photoFile);
+        const res  = await fetch(`${API}/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+        photoUrl = data.url;
+      } catch {
+        setPostError('Photo upload failed. Try again or remove the photo.');
+        setUploading(false);
+        return;
+      }
+    }
 
     const newPost = {
       id:       Date.now(),
@@ -20,15 +57,18 @@ export default function Post({ onSubmit }) {
       question: postText.trim(),
       tag:      selectedTag || 'Other',
       replies:  [],
+      photo:    photoUrl,
     };
 
+    setUploading(false);
     setSubmitted(true);
 
-    // After a short pause so the success screen shows, navigate to community
     setTimeout(() => {
       setSubmitted(false);
       setPostText('');
       setSelectedTag('');
+      setPhotoFile(null);
+      setPhotoPreview(null);
       if (onSubmit) onSubmit(newPost);
     }, 1800);
   };
@@ -45,7 +85,8 @@ export default function Post({ onSubmit }) {
           Post <span className="text-garage-gold">Submitted.</span>
         </h2>
         <p className="text-garage-muted text-sm max-w-xs leading-relaxed">
-          Taking you to the community feed...x        </p>
+          Taking you to the community feed...
+        </p>
       </div>
     );
   }
@@ -115,19 +156,42 @@ export default function Post({ onSubmit }) {
           <label className="block font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold mb-3">
             Attach a Photo <span className="text-garage-muted normal-case font-normal tracking-normal">(optional)</span>
           </label>
-          <label className="flex items-center gap-3 px-4 py-4 rounded border border-dashed border-garage-border bg-garage-surface cursor-pointer hover:border-garage-gold transition group">
-            <Camera className="w-5 h-5 text-garage-muted group-hover:text-garage-gold transition" />
-            <span className="text-sm text-garage-muted group-hover:text-garage-text transition">Click to upload a photo</span>
-            <input type="file" accept="image/*" className="hidden" />
-          </label>
+
+          {!photoPreview ? (
+            <label className="flex items-center gap-3 px-4 py-4 rounded border border-dashed border-garage-border bg-garage-surface cursor-pointer hover:border-garage-gold transition group">
+              <Camera className="w-5 h-5 text-garage-muted group-hover:text-garage-gold transition" />
+              <span className="text-sm text-garage-muted group-hover:text-garage-text transition">Click to upload a photo</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </label>
+          ) : (
+            <div className="relative rounded border border-garage-border overflow-hidden">
+              <img src={photoPreview} alt="Preview" className="w-full max-h-64 object-cover" />
+              <button
+                onClick={clearPhoto}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center hover:bg-black transition"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+              <div className="px-3 py-2 bg-garage-surface border-t border-garage-border">
+                <p className="text-xs text-garage-muted truncate">{photoFile?.name}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          className="w-full py-3 bg-garage-gold text-garage-bg font-condensed font-bold text-base tracking-widest rounded hover:bg-garage-gold-hover transition"
+          disabled={uploading}
+          className="w-full py-3 bg-garage-gold text-garage-bg font-condensed font-bold text-base tracking-widest rounded hover:bg-garage-gold-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          SUBMIT POST
+          {uploading ? 'UPLOADING...' : 'SUBMIT POST'}
         </button>
 
       </div>
