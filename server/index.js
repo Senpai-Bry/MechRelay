@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // ← moved up here
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Create users table if it doesn't exist
 const Database = require('better-sqlite3');

@@ -22,10 +22,10 @@ export default function Post({ onSubmit }) {
   };
 
   const clearPhoto = () => {
-    setPhotoFile(null);
-    setPhotoPreview(null);
-    fileInputRef.current.value = '';
-  };
+  setPhotoFile(null);
+  setPhotoPreview(null);
+  if (fileInputRef.current) fileInputRef.current.value = '';
+};
 
   const handleSubmit = async () => {
     if (!postText.trim()) { setPostError('Please describe the issue.'); return; }
@@ -137,10 +137,12 @@ export default function Post({ onSubmit }) {
 
         {/* Question Input */}
         <div>
-          <label className="block font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold mb-3">
+          <label htmlFor="post-body" className="block font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold mb-3">
             Describe the Issue
           </label>
           <textarea
+            id="post-body"
+            name="post-body"
             value={postText}
             onChange={(e) => { setPostText(e.target.value); setPostError(''); }}
             placeholder="e.g. 2019 RAM 1500 — rough idle at cold start, clears up after 10 minutes. Already checked MAF and IAC..."
@@ -153,15 +155,17 @@ export default function Post({ onSubmit }) {
 
         {/* Photo Upload */}
         <div>
-          <label className="block font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold mb-3">
+          <p className="font-condensed font-bold text-xs tracking-widest uppercase text-garage-gold mb-3">
             Attach a Photo <span className="text-garage-muted normal-case font-normal tracking-normal">(optional)</span>
-          </label>
+          </p>
 
           {!photoPreview ? (
-            <label className="flex items-center gap-3 px-4 py-4 rounded border border-dashed border-garage-border bg-garage-surface cursor-pointer hover:border-garage-gold transition group">
+            <label htmlFor="post-photo" className="flex items-center gap-3 px-4 py-4 rounded border border-dashed border-garage-border bg-garage-surface cursor-pointer hover:border-garage-gold transition group">
               <Camera className="w-5 h-5 text-garage-muted group-hover:text-garage-gold transition" />
               <span className="text-sm text-garage-muted group-hover:text-garage-text transition">Click to upload a photo</span>
               <input
+                id="post-photo"
+                name="post-photo"
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
