@@ -107,7 +107,6 @@ function Username({ name, onClickUser }) {
 // ── Helpful Button ────────────────────────────────────────────────────────────
 function HelpfulButton({ replyId, helpfulCounts, onHelpful }) {
   const count = helpfulCounts[replyId] ?? 0;
-  const voted = count > 0 && helpfulCounts[`${replyId}_voted`];
 
   return (
     <button
@@ -146,8 +145,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
 
   const handleHelpful = (replyId) => {
     setHelpfulCounts(prev => {
-      const alreadyVoted = prev[`${replyId}_voted`];
-      if (alreadyVoted) return prev; // no un-voting for now
+      if (prev[`${replyId}_voted`]) return prev;
       return {
         ...prev,
         [replyId]: (prev[replyId] ?? 0) + 1,
@@ -189,13 +187,14 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
             </div>
             <p className="text-garage-text leading-relaxed">{activePost.question}</p>
 
-{activePost.photo && (
-  <img
-    src={`http://localhost:5000${activePost.photo}`}
-    alt="Post attachment"
-    className="mt-4 rounded border border-garage-border max-h-96 object-cover w-full"
-  />
-)}
+            {/* Photo — src is already a full URL from the upload API */}
+            {activePost.photo && (
+              <img
+                src={activePost.photo}
+                alt="Post attachment"
+                className="mt-4 rounded border border-garage-border max-h-96 object-cover w-full"
+              />
+            )}
           </div>
 
           {/* AI Panel */}
@@ -225,7 +224,6 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
                     <span className="text-xs text-garage-muted">· {reply.time}</span>
                   </div>
                   <p className="text-garage-muted text-sm leading-relaxed mb-3">{reply.text}</p>
-                  {/* Helpful button */}
                   <HelpfulButton replyId={replyId} helpfulCounts={helpfulCounts} onHelpful={handleHelpful} />
                 </div>
               );
@@ -298,7 +296,6 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  {/* Clickable avatar */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setPanelUser(post.user); }}
                     className="w-8 h-8 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0 hover:opacity-80 transition"
