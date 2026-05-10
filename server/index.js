@@ -42,6 +42,9 @@ app.use('/api/upload', uploadRouter);
 const authRouter = require('./routes/auth');
 app.use('/api/auth', authRouter);
 
+const joblogRouter = require('./routes/joblog');
+app.use('/api/joblog', joblogRouter);
+
 app.listen(PORT, () => {
   console.log(`MechRelay server running on http://localhost:${PORT}`);
 });

@@ -396,6 +396,43 @@ export default function Profile({ currentUser, posts = [] }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [display, setDisplay]           = useState({ username: currentUser?.username ?? "", location: "", yearsExp: "", specialties: [], photo: null });
   const [saved, setSaved]               = useState(false);
+  const [jobLogs, setJobLogs]         = useState([]);
+const [jobLogsLoading, setJobLogsLoading] = useState(false);
+const [showJobForm, setShowJobForm] = useState(false);
+const [jobForm, setJobForm]         = useState({ vehicle: '', repair_type: '', notes: '', status: 'completed', date: '' });
+const [jobSubmitting, setJobSubmitting] = useState(false);
+
+useEffect(() => {
+  if (!currentUser?.username) return;
+  setJobLogsLoading(true);
+  fetch(`http://localhost:5000/api/joblog/${currentUser.username}`)
+    .then(r => r.json())
+    .then(data => { setJobLogs(Array.isArray(data) ? data : []); setJobLogsLoading(false); })
+    .catch(() => setJobLogsLoading(false));
+}, [currentUser?.username]);
+
+const handleJobSubmit = async () => {
+  const { vehicle, repair_type, date } = jobForm;
+  if (!vehicle || !repair_type || !date) return;
+  setJobSubmitting(true);
+  try {
+    const res = await fetch('http://localhost:5000/api/joblog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...jobForm, user: currentUser.username }),
+    });
+    const newEntry = await res.json();
+    setJobLogs(prev => [newEntry, ...prev]);
+    setJobForm({ vehicle: '', repair_type: '', notes: '', status: 'completed', date: '' });
+    setShowJobForm(false);
+  } catch (err) { console.error(err); }
+  setJobSubmitting(false);
+};
+
+const handleJobDelete = async (id) => {
+  await fetch(`http://localhost:5000/api/joblog/${id}`, { method: 'DELETE' });
+  setJobLogs(prev => prev.filter(j => j.id !== id));
+};
   const [buyModal, setBuyModal]         = useState(null);
   const [ownedBadges, setOwnedBadges]   = useState(BADGES.filter(b => b.owned).map(b => b.id));
 
@@ -609,15 +646,135 @@ export default function Profile({ currentUser, posts = [] }) {
         )}
 
         {/* ── JOB LOG ── */}
-        {activeTab === "joblog" && (
-          <div className="pb-16">
-            <div className="flex items-center justify-between mb-4">
-              <SectionLabel>Job Log</SectionLabel>
-              <button className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">+ ADD ENTRY</button>
-            </div>
-            <div className="space-y-2">{MOCK_JOB_LOG.map(job => <JobEntry key={job.id} job={job} />)}</div>
+        {/* ── JOB LOG ── */}
+{activeTab === "joblog" && (
+  <div className="pb-16">
+    <div className="flex items-center justify-between mb-4">
+      <SectionLabel>Job Log</SectionLabel>
+      <button
+        onClick={() => setShowJobForm(p => !p)}
+        className="px-4 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition"
+      >
+        {showJobForm ? 'CANCEL' : '+ ADD ENTRY'}
+      </button>
+    </div>
+
+    {/* Add Entry Form */}
+    {showJobForm && (
+      <div className="mb-6 p-6 rounded border border-garage-border space-y-4" style={{ backgroundColor: "#1A2535" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold mb-1">Vehicle *</label>
+            <input
+              type="text"
+              placeholder="e.g. 2018 Ford F-150"
+              value={jobForm.vehicle}
+              onChange={e => setJobForm(p => ({ ...p, vehicle: e.target.value }))}
+              className="w-full px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm bg-garage-bg"
+            />
           </div>
-        )}
+          <div>
+            <label className="block text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold mb-1">Repair Type *</label>
+            <select
+              value={jobForm.repair_type}
+              onChange={e => setJobForm(p => ({ ...p, repair_type: e.target.value }))}
+              className="w-full px-4 py-2 rounded border border-garage-border text-garage-text outline-none focus:border-garage-gold transition text-sm bg-garage-bg"
+            >
+              <option value="">Select…</option>
+              {["Engine","Transmission","Brakes","Electrical","Diagnostics","Suspension","Hybrid / EV","AC & Heating","Exhaust","Bodywork","General"].map(o => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold mb-1">Date *</label>
+            <input
+              type="date"
+              value={jobForm.date}
+              onChange={e => setJobForm(p => ({ ...p, date: e.target.value }))}
+              className="w-full px-4 py-2 rounded border border-garage-border text-garage-text outline-none focus:border-garage-gold transition text-sm bg-garage-bg"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold mb-1">Status</label>
+            <select
+              value={jobForm.status}
+              onChange={e => setJobForm(p => ({ ...p, status: e.target.value }))}
+              className="w-full px-4 py-2 rounded border border-garage-border text-garage-text outline-none focus:border-garage-gold transition text-sm bg-garage-bg"
+            >
+              <option value="completed">Completed</option>
+              <option value="in progress">In Progress</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-condensed font-bold tracking-widest uppercase text-garage-gold mb-1">Notes</label>
+          <textarea
+            rows={3}
+            placeholder="What was the issue? What did you do?"
+            value={jobForm.notes}
+            onChange={e => setJobForm(p => ({ ...p, notes: e.target.value }))}
+            className="w-full px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm bg-garage-bg resize-none"
+          />
+        </div>
+        <button
+          onClick={handleJobSubmit}
+          disabled={jobSubmitting || !jobForm.vehicle || !jobForm.repair_type || !jobForm.date}
+          className="px-6 py-2 bg-garage-gold text-garage-bg text-xs font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {jobSubmitting ? 'SAVING…' : 'SAVE ENTRY'}
+        </button>
+      </div>
+    )}
+
+    {/* Job List */}
+    {jobLogsLoading ? (
+      <p className="text-garage-muted text-sm">Loading…</p>
+    ) : jobLogs.length === 0 ? (
+      <div className="p-8 text-center rounded border border-garage-border" style={{ backgroundColor: "#1A2535" }}>
+        <p className="text-garage-muted text-sm">No job log entries yet. Add your first one above.</p>
+      </div>
+    ) : (
+      <div className="space-y-2">
+        {jobLogs.map(job => (
+          <div key={job.id} className="border border-garage-border rounded overflow-hidden hover:border-garage-gold transition" style={{ backgroundColor: "#1A2535" }}>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-2 h-2 rounded-full shrink-0 bg-garage-gold" />
+                <div>
+                  <p className="font-condensed font-bold text-garage-text text-sm">{job.repair_type}</p>
+                  <p className="text-xs text-garage-muted mt-0.5">{job.vehicle} · {job.date}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-condensed font-bold tracking-widest uppercase px-2 py-0.5 rounded border ${
+                  job.status === 'completed' ? 'text-green-400 border-green-700' :
+                  job.status === 'in progress' ? 'text-yellow-400 border-yellow-700' :
+                  'text-garage-muted border-garage-border'
+                }`}>{job.status}</span>
+                <button
+                  onClick={() => handleJobDelete(job.id)}
+                  className="text-garage-muted hover:text-red-400 transition"
+                  title="Delete entry"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 3.5h10M5.5 3.5V2.5h3v1M4.5 3.5l.5 8h4l.5-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {job.notes ? (
+              <div className="px-5 pb-4 border-t border-garage-border" style={{ backgroundColor: "#0F1923" }}>
+                <p className="text-sm text-garage-muted leading-relaxed pt-3">{job.notes}</p>
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
         {/* ── SHOWCASE ── */}
         {activeTab === "showcase" && (
