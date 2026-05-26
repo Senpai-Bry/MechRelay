@@ -33,12 +33,12 @@ router.get('/:id', (req, res) => {
 // POST new post
 router.post('/', (req, res) => {
   try {
-    const { user, question, tag, photo } = req.body;  // ← add photo
+    const { user, question, tag } = req.body;
     if (!user || !question) return res.status(400).json({ error: 'User and question are required' });
     const time = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const result = db.prepare(
-      'INSERT INTO posts (user, question, tag, time, photo) VALUES (?, ?, ?, ?, ?)'  // ← add photo
-    ).run(user, question, tag || 'General', time, photo ?? null);  // ← add photo
+      'INSERT INTO posts (user, question, tag, time) VALUES (?, ?, ?, ?)'
+    ).run(user, question, tag || 'General', time);
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json({ ...post, replies: [], reply_count: 0 });
   } catch (err) {
@@ -57,6 +57,35 @@ router.post('/:id/replies', (req, res) => {
     ).run(req.params.id, user, text, time);
     const reply = db.prepare('SELECT * FROM replies WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(reply);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT (edit) a post
+router.put('/:id', (req, res) => {
+  try {
+    const { question, tag } = req.body;
+    if (!question) return res.status(400).json({ error: 'Question is required' });
+    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    db.prepare('UPDATE posts SET question = ?, tag = ? WHERE id = ?')
+      .run(question, tag || post.tag, req.params.id);
+    const updated = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE a post (also deletes its replies)
+router.delete('/:id', (req, res) => {
+  try {
+    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    db.prepare('DELETE FROM replies WHERE post_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM posts WHERE id = ?').run(req.params.id);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -5,7 +5,7 @@ import WhyMechRelay from "./pages/WhyMechRelay";
 import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
-import Profile from "./pages/Profile";
+
 const API = 'http://localhost:5000/api';
 
 const SEED_POSTS = [
@@ -81,67 +81,24 @@ export default function App() {
   const [searchOpen, setSearchOpen]               = useState(false);
 
   // ── Auth state ────────────────────────────────────
-  const [currentUser, setCurrentUser]             = useState(() => {
-    const saved = localStorage.getItem('mr_user');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [authMode, setAuthMode]                   = useState('login'); // 'login' | 'register'
-  const [authEmail, setAuthEmail]                 = useState('');
-  const [authPassword, setAuthPassword]           = useState('');
-  const [authUsername, setAuthUsername]           = useState('');
-  const [authError, setAuthError]                 = useState('');
-  const [authLoading, setAuthLoading]             = useState(false);
+  const [currentUser, setCurrentUser]             = useState(null); // null = logged out
+  const [loginEmail, setLoginEmail]               = useState('');
+  const [loginPassword, setLoginPassword]         = useState('');
+  const [loginError, setLoginError]               = useState('');
+  const [signupUsername, setSignupUsername]       = useState('');
+  const [signupEmail, setSignupEmail]             = useState('');
+  const [signupPassword, setSignupPassword]       = useState('');
+  const [signupError, setSignupError]             = useState('');
+  const [authTab, setAuthTab]                     = useState('login'); // 'login' | 'signup'
 
-  const handleLogin = async () => {
-    if (!authEmail || !authPassword) { setAuthError('Please fill in all fields.'); return; }
-    setAuthLoading(true);
-    setAuthError('');
-    try {
-      const res  = await fetch(`${API}/auth/login`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: authEmail, password: authPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setAuthError(data.error); return; }
-      const user = { username: data.username, token: data.token };
-      setCurrentUser(user);
-      localStorage.setItem('mr_user', JSON.stringify(user));
-      navigateTo('home');
-    } catch {
-      setAuthError('Something went wrong. Try again.');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleRegister = async () => {
-    if (!authUsername || !authEmail || !authPassword) { setAuthError('Please fill in all fields.'); return; }
-    setAuthLoading(true);
-    setAuthError('');
-    try {
-      const res  = await fetch(`${API}/auth/register`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ username: authUsername, email: authEmail, password: authPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setAuthError(data.error); return; }
-      const user = { username: data.username, token: data.token };
-      setCurrentUser(user);
-      localStorage.setItem('mr_user', JSON.stringify(user));
-      navigateTo('home');
-    } catch {
-      setAuthError('Something went wrong. Try again.');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('mr_user');
-  };
+  // ── Edit/Delete modal state ───────────────────────
+  const [showEditModal, setShowEditModal]         = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingPost, setEditingPost]             = useState(null);
+  const [editQuestion, setEditQuestion]           = useState('');
+  const [editTag, setEditTag]                     = useState('');
+  const [editError, setEditError]                 = useState('');
+  const [deletingPostId, setDeletingPostId]       = useState(null);
 
   // ── Load posts from API and merge with seed posts ──
   const fetchPosts = async () => {
@@ -159,17 +116,27 @@ export default function App() {
     }
   };
 
+  useEffect(() => { fetchPosts(); }, []);
+
   useEffect(() => {
-    fetchPosts();
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowSearchModal(false);
+        setShowQuestionModal(false);
+        setShowUploadModal(false);
+        setShowEditModal(false);
+        setShowDeleteConfirm(false);
+        setFabOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   // ── When a thread is opened, load full post with replies ──
   const handleSetActivePostId = async (id) => {
     if (!id) { setActivePostId(null); return; }
-    if (String(id).startsWith('seed-')) {
-      setActivePostId(id);
-      return;
-    }
+    if (String(id).startsWith('seed-')) { setActivePostId(id); return; }
     try {
       const res  = await fetch(`${API}/posts/${id}`);
       const data = await res.json();
@@ -181,42 +148,28 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') {
-        setShowSearchModal(false);
-        setShowQuestionModal(false);
-        setShowUploadModal(false);
-        setFabOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
+  // ── New post submitted ────────────────────────────
+  const handleNewPost = async (newPost) => {
+    try {
+      const res  = await fetch(`${API}/posts`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          user:     currentUser ? currentUser.username : newPost.user,
+          question: newPost.question,
+          tag:      newPost.tag,
+        }),
+      });
+      const saved = await res.json();
+      setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
+    } catch (err) {
+      console.error('Failed to save post:', err);
+      setPosts(prev => [newPost, ...prev]);
+    }
+    setActivePage('community');
+  };
 
-// ── New post submitted from Post page ────────────
-const handleNewPost = async (newPost) => {
-  try {
-    const res = await fetch(`${API}/posts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user: currentUser ? currentUser.username : newPost.user,
-        question: newPost.question,
-        tag: newPost.tag,
-        photo: newPost.photo ?? null,   // ← add this line
-      }),
-    });
-    const saved = await res.json();
-    setPosts(prev => [{ ...saved, replies: [], photo: newPost.photo ?? null }, ...prev]);
-  } catch (err) {
-    console.error('Failed to save post:', err);
-    setPosts(prev => [newPost, ...prev]);
-  }
-  setActivePage('community');
-};
-
-  // ── Add reply ────────────────────────────────────
+  // ── Add reply ─────────────────────────────────────
   const handleAddReply = async (postId, reply) => {
     if (String(postId).startsWith('seed-')) {
       setPosts(prev =>
@@ -232,10 +185,7 @@ const handleNewPost = async (newPost) => {
       const res  = await fetch(`${API}/posts/${postId}/replies`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          user: currentUser ? currentUser.username : reply.user,
-          text: reply.text,
-        }),
+        body:    JSON.stringify({ user: reply.user, text: reply.text }),
       });
       const saved = await res.json();
       setPosts(prev =>
@@ -257,10 +207,108 @@ const handleNewPost = async (newPost) => {
     }
   };
 
-  // ── FAB Search ───────────────────────────────────
+  // ── Auth: Login ───────────────────────────────────
+  const handleLogin = async () => {
+    setLoginError('');
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setLoginError('Email and password are required.');
+      return;
+    }
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setLoginError(data.error || 'Login failed.'); return; }
+      setCurrentUser({ username: data.username, token: data.token });
+      setLoginEmail('');
+      setLoginPassword('');
+      navigateTo('profile');
+    } catch {
+      setLoginError('Could not connect to server.');
+    }
+  };
+
+  // ── Auth: Signup ──────────────────────────────────
+  const handleSignup = async () => {
+    setSignupError('');
+    if (!signupUsername.trim() || !signupEmail.trim() || !signupPassword.trim()) {
+      setSignupError('All fields are required.');
+      return;
+    }
+    try {
+      const res  = await fetch(`${API}/auth/register`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ username: signupUsername, email: signupEmail, password: signupPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSignupError(data.error || 'Sign up failed.'); return; }
+      setCurrentUser({ username: data.username, token: data.token });
+      setSignupUsername('');
+      setSignupEmail('');
+      setSignupPassword('');
+      navigateTo('profile');
+    } catch {
+      setSignupError('Could not connect to server.');
+    }
+  };
+
+  // ── Auth: Logout ──────────────────────────────────
+  const handleLogout = () => {
+    setCurrentUser(null);
+    navigateTo('home');
+  };
+
+  // ── Edit post ─────────────────────────────────────
+  const openEditModal = (post) => {
+    setEditingPost(post);
+    setEditQuestion(post.question);
+    setEditTag(post.tag);
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editQuestion.trim()) { setEditError('Question cannot be empty.'); return; }
+    try {
+      const res  = await fetch(`${API}/posts/${editingPost.id}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ question: editQuestion, tag: editTag }),
+      });
+      const updated = await res.json();
+      setPosts(prev => prev.map(p => p.id === editingPost.id ? { ...p, ...updated } : p));
+      setShowEditModal(false);
+      setEditingPost(null);
+    } catch {
+      setEditError('Failed to save changes.');
+    }
+  };
+
+  // ── Delete post ───────────────────────────────────
+  const openDeleteConfirm = (postId) => {
+    setDeletingPostId(postId);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await fetch(`${API}/posts/${deletingPostId}`, { method: 'DELETE' });
+      setPosts(prev => prev.filter(p => p.id !== deletingPostId));
+      setShowDeleteConfirm(false);
+      setDeletingPostId(null);
+    } catch {
+      alert('Failed to delete post.');
+    }
+  };
+
+  // ── FAB handlers ──────────────────────────────────
   const handleSearchSubmit = async () => {
-    if (!searchText.trim())        { setSearchError('Search cannot be empty.'); return; }
-    if (searchText.length < 3)     { setSearchError('Search must be at least 3 characters.'); return; }
+    if (!searchText.trim())    { setSearchError('Search cannot be empty.'); return; }
+    if (searchText.length < 3) { setSearchError('Search must be at least 3 characters.'); return; }
     try {
       const res  = await fetch(`${API}/search`, {
         method:  'POST',
@@ -275,15 +323,14 @@ const handleNewPost = async (newPost) => {
     }
   };
 
-  // ── FAB Question ─────────────────────────────────
   const handleQuestionSubmit = async () => {
-    if (!questionText.trim())      { setQuestionError('Question cannot be empty.'); return; }
-    if (questionText.length < 10)  { setQuestionError('Please provide more detail (10+ characters).'); return; }
+    if (!questionText.trim())     { setQuestionError('Question cannot be empty.'); return; }
+    if (questionText.length < 10) { setQuestionError('Please provide more detail (10+ characters).'); return; }
     try {
       const res  = await fetch(`${API}/posts`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ user: currentUser ? currentUser.username : 'Anonymous', question: questionText, tag: 'Other' }),
+        body:    JSON.stringify({ user: currentUser ? currentUser.username : 'You', question: questionText, tag: 'Other' }),
       });
       const saved = await res.json();
       setPosts(prev => [{ ...saved, replies: [] }, ...prev]);
@@ -295,7 +342,6 @@ const handleNewPost = async (newPost) => {
     }
   };
 
-  // ── FAB Upload ───────────────────────────────────
   const handleUploadSubmit = async () => {
     if (!uploadFile) { setUploadError('Please select an image.'); return; }
     const formData = new FormData();
@@ -315,11 +361,14 @@ const handleNewPost = async (newPost) => {
     setActivePage(page);
     setActivePostId(null);
     setMenuOpen(false);
-    setAuthError('');
-    setAuthEmail('');
-    setAuthPassword('');
-    setAuthUsername('');
   };
+
+  // Posts that belong to the logged-in user (API posts only, not seeds)
+  const myPosts = currentUser
+    ? posts.filter(p => !String(p.id).startsWith('seed-') && p.user === currentUser.username)
+    : [];
+
+  const TAG_OPTIONS = ['Engine', 'Brakes', 'Transmission', 'Electrical', 'AC', 'Suspension', 'Exhaust', 'General', 'Other'];
 
   return (
     <div className="min-h-screen flex flex-col bg-garage-bg font-body">
@@ -382,33 +431,21 @@ const handleNewPost = async (newPost) => {
             >
               POST
             </button>
-           {currentUser ? (
-  <>
-    <button
-      onClick={() => navigateTo('profile')}
-      className="flex items-center gap-2 px-3 py-2 border border-garage-border rounded text-sm text-garage-muted hover:text-garage-text hover:border-garage-gold transition"
-    >
-      <div className="w-6 h-6 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-xs">
-        {currentUser.username[0].toUpperCase()}
-      </div>
-      <span className="font-condensed font-bold tracking-widest">{currentUser.username}</span>
-    </button>
-    <button
-      onClick={handleLogout}
-      className="text-sm text-garage-muted hover:text-garage-text transition"
-    >
-      Logout
-    </button>
-  </>
-) : (
-  <button
-    onClick={() => navigateTo('login')}
-    className="text-sm text-garage-muted hover:text-garage-text transition"
-  >
-    Login
-  </button>
-)}
-  
+            {currentUser ? (
+              <button
+                onClick={() => navigateTo('profile')}
+                className="text-sm text-garage-gold hover:text-garage-text transition font-condensed font-bold tracking-wide"
+              >
+                {currentUser.username}
+              </button>
+            ) : (
+              <button
+                onClick={() => navigateTo('login')}
+                className="text-sm text-garage-muted hover:text-garage-text transition"
+              >
+                Login
+              </button>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -446,11 +483,17 @@ const handleNewPost = async (newPost) => {
             ))}
             {currentUser ? (
               <>
-                <p className="text-garage-gold text-sm font-condensed font-bold">@{currentUser.username}</p>
-                <button onClick={handleLogout} className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium">Logout</button>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }} className="block text-garage-gold py-1 text-sm font-medium">
+                  My Profile ({currentUser.username})
+                </a>
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }} className="block text-garage-muted hover:text-garage-text py-1 text-sm font-medium">
+                  Logout
+                </a>
               </>
             ) : (
-              <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }} className="block text-garage-muted hover:text-garage-text transition py-1 text-sm font-medium">Login</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('login'); }} className="block text-garage-muted hover:text-garage-text py-1 text-sm font-medium">
+                Login
+              </a>
             )}
           </div>
         </div>
@@ -516,99 +559,191 @@ const handleNewPost = async (newPost) => {
         {activePage === 'about'        && <WhyMechRelay />}
 
         {activePage === 'community' && (
-  <Community
-    posts={posts}
-    loading={postsLoading}
-    activePostId={activePostId}
-    setActivePostId={handleSetActivePostId}
-    onNewPost={() => navigateTo('post')}
-    onAddReply={handleAddReply}
-    currentUser={currentUser}
-    onViewProfile={() => navigateTo('profile')}
-  />
-)}
+          <Community
+            posts={posts}
+            loading={postsLoading}
+            activePostId={activePostId}
+            setActivePostId={handleSetActivePostId}
+            onNewPost={() => navigateTo('post')}
+            onAddReply={handleAddReply}
+          />
+        )}
 
         {activePage === 'post' && (
           <Post onSubmit={handleNewPost} />
         )}
-{activePage === 'profile' && currentUser && (
-  <Profile currentUser={currentUser} posts={posts} />
-)}
-        {/* ── LOGIN / REGISTER PAGE ── */}
+
+        {/* ── LOGIN / SIGNUP ── */}
         {activePage === 'login' && (
           <section className="py-20 flex items-center justify-center px-6">
             <div className="p-8 rounded w-full max-w-md border border-garage-border" style={{ backgroundColor: '#1A2535' }}>
+              <h2 className="font-condensed font-extrabold text-2xl tracking-wide text-garage-text mb-6 text-center">
+                Mech<span className="text-garage-gold">Relay</span>
+              </h2>
 
               {/* Tab switcher */}
-              <div className="flex mb-6 border border-garage-border rounded overflow-hidden">
+              <div className="flex border border-garage-border rounded overflow-hidden mb-6">
                 <button
-                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
-                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authMode === 'login' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
+                  onClick={() => { setAuthTab('login'); setLoginError(''); setSignupError(''); }}
+                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authTab === 'login' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
                 >
                   SIGN IN
                 </button>
                 <button
-                  onClick={() => { setAuthMode('register'); setAuthError(''); }}
-                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authMode === 'register' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
+                  onClick={() => { setAuthTab('signup'); setLoginError(''); setSignupError(''); }}
+                  className={`flex-1 py-2 text-sm font-condensed font-bold tracking-widest transition ${authTab === 'signup' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}
                 >
                   CREATE ACCOUNT
                 </button>
               </div>
 
-              <h2 className="font-condensed font-extrabold text-2xl tracking-wide text-garage-text mb-6 text-center">
-                {authMode === 'login' ? <>Sign In to Mech<span className="text-garage-gold">Relay</span></> : <>Join Mech<span className="text-garage-gold">Relay</span></>}
-              </h2>
-
-              {/* Username field (register only) */}
-              {authMode === 'register' && (
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={authUsername}
-                  onChange={(e) => { setAuthUsername(e.target.value); setAuthError(''); }}
-                  className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
-                  style={{ backgroundColor: '#0F1923' }}
-                />
+              {authTab === 'login' ? (
+                <>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={loginEmail}
+                    onChange={(e) => { setLoginEmail(e.target.value); setLoginError(''); }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                    className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                    style={{ backgroundColor: '#0F1923' }}
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={loginPassword}
+                    onChange={(e) => { setLoginPassword(e.target.value); setLoginError(''); }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                    className="w-full mb-4 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                    style={{ backgroundColor: '#0F1923' }}
+                  />
+                  {loginError && <p className="text-red-400 text-sm mb-4">{loginError}</p>}
+                  <button onClick={handleLogin} className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                    SIGN IN
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={signupUsername}
+                    onChange={(e) => { setSignupUsername(e.target.value); setSignupError(''); }}
+                    className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                    style={{ backgroundColor: '#0F1923' }}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={signupEmail}
+                    onChange={(e) => { setSignupEmail(e.target.value); setSignupError(''); }}
+                    className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                    style={{ backgroundColor: '#0F1923' }}
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={signupPassword}
+                    onChange={(e) => { setSignupPassword(e.target.value); setSignupError(''); }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+                    className="w-full mb-4 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
+                    style={{ backgroundColor: '#0F1923' }}
+                  />
+                  {signupError && <p className="text-red-400 text-sm mb-4">{signupError}</p>}
+                  <button onClick={handleSignup} className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
+                    CREATE ACCOUNT
+                  </button>
+                </>
               )}
-
-              <input
-                type="email"
-                placeholder="Email"
-                value={authEmail}
-                onChange={(e) => { setAuthEmail(e.target.value); setAuthError(''); }}
-                className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
-                style={{ backgroundColor: '#0F1923' }}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={authPassword}
-                onChange={(e) => { setAuthPassword(e.target.value); setAuthError(''); }}
-                onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? handleLogin() : handleRegister())}
-                className="w-full mb-3 px-4 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition text-sm"
-                style={{ backgroundColor: '#0F1923' }}
-              />
-
-              {authError && <p className="text-red-400 text-sm mb-3">{authError}</p>}
-
-              <button
-                onClick={authMode === 'login' ? handleLogin : handleRegister}
-                disabled={authLoading}
-                className="w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition disabled:opacity-50"
-              >
-                {authLoading ? 'LOADING...' : authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
-              </button>
-
-              <p className="mt-4 text-center text-sm text-garage-muted">
-                {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                <button
-                  onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-                  className="text-garage-gold hover:underline"
-                >
-                  {authMode === 'login' ? 'Sign up' : 'Sign in'}
-                </button>
-              </p>
             </div>
+          </section>
+        )}
+
+        {/* ── PROFILE PAGE ── */}
+        {activePage === 'profile' && (
+          <section className="max-w-3xl mx-auto px-6 py-12">
+            {!currentUser ? (
+              <div className="text-center py-20">
+                <p className="text-garage-muted mb-4">You need to be logged in to view your profile.</p>
+                <button
+                  onClick={() => navigateTo('login')}
+                  className="px-6 py-2 bg-garage-gold text-garage-bg font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition"
+                >
+                  LOG IN
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Profile header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="font-condensed font-extrabold text-3xl text-garage-text tracking-wide">
+                      {currentUser.username}
+                    </h2>
+                    <p className="text-garage-muted text-sm mt-1">{myPosts.length} post{myPosts.length !== 1 ? 's' : ''}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 border border-garage-border text-garage-muted text-sm rounded hover:text-garage-text hover:border-garage-text transition font-condensed tracking-widest"
+                  >
+                    LOGOUT
+                  </button>
+                </div>
+
+                {/* My Posts */}
+                <h3 className="font-condensed font-bold text-lg text-garage-text tracking-wide mb-4 uppercase">
+                  My Posts
+                </h3>
+
+                {myPosts.length === 0 ? (
+                  <div className="border border-garage-border rounded p-8 text-center" style={{ backgroundColor: '#1A2535' }}>
+                    <p className="text-garage-muted text-sm">You haven't posted anything yet.</p>
+                    <button
+                      onClick={() => navigateTo('post')}
+                      className="mt-4 px-6 py-2 bg-garage-gold text-garage-bg font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition text-sm"
+                    >
+                      POST A QUESTION
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {myPosts.map(post => (
+                      <div
+                        key={post.id}
+                        className="border border-garage-border rounded p-5"
+                        style={{ backgroundColor: '#1A2535' }}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs text-garage-gold font-condensed font-bold uppercase tracking-wider">
+                              {post.tag}
+                            </span>
+                            <p className="text-garage-text text-sm mt-1 leading-relaxed">{post.question}</p>
+                            <p className="text-garage-muted text-xs mt-2">
+                              {post.time} · {post.reply_count ?? 0} {post.reply_count === 1 ? 'reply' : 'replies'}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button
+                              onClick={() => openEditModal(post)}
+                              className="px-3 py-1.5 text-xs font-condensed font-bold tracking-wider border border-garage-border text-garage-muted rounded hover:text-garage-text hover:border-garage-gold transition"
+                            >
+                              EDIT
+                            </button>
+                            <button
+                              onClick={() => openDeleteConfirm(post.id)}
+                              className="px-3 py-1.5 text-xs font-condensed font-bold tracking-wider border border-red-800 text-red-400 rounded hover:bg-red-900/30 transition"
+                            >
+                              DELETE
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </section>
         )}
 
@@ -738,6 +873,68 @@ const handleNewPost = async (newPost) => {
               <button onClick={handleUploadSubmit} className="mt-4 w-full bg-garage-gold text-garage-bg py-2 rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition">
                 UPLOAD
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── EDIT POST MODAL ── */}
+        {showEditModal && editingPost && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowEditModal(false)}>
+            <div className="border border-garage-border p-6 rounded w-11/12 max-w-md" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-condensed font-bold text-xl text-garage-text mb-4">Edit Post</h2>
+              <textarea
+                value={editQuestion}
+                onChange={(e) => { setEditQuestion(e.target.value); setEditError(''); }}
+                className="w-full h-32 px-3 py-2 rounded border border-garage-border text-garage-text placeholder:text-garage-muted outline-none focus:border-garage-gold transition resize-none text-sm"
+                style={{ backgroundColor: '#0F1923' }}
+              />
+              <select
+                value={editTag}
+                onChange={(e) => setEditTag(e.target.value)}
+                className="w-full mt-3 px-3 py-2 rounded border border-garage-border text-garage-text outline-none focus:border-garage-gold transition text-sm"
+                style={{ backgroundColor: '#0F1923' }}
+              >
+                {TAG_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              {editError && <p className="text-red-400 text-sm mt-2">{editError}</p>}
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 py-2 border border-garage-border text-garage-muted rounded font-condensed font-bold tracking-widest hover:text-garage-text transition text-sm"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={handleEditSubmit}
+                  className="flex-1 py-2 bg-garage-gold text-garage-bg rounded font-condensed font-bold tracking-widest hover:bg-garage-gold-hover transition text-sm"
+                >
+                  SAVE
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── DELETE CONFIRM MODAL ── */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="border border-garage-border p-6 rounded w-11/12 max-w-sm" style={{ backgroundColor: '#1A2535' }} onClick={(e) => e.stopPropagation()}>
+              <h2 className="font-condensed font-bold text-xl text-garage-text mb-2">Delete Post?</h2>
+              <p className="text-garage-muted text-sm mb-6">This will permanently delete the post and all its replies. This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-2 border border-garage-border text-garage-muted rounded font-condensed font-bold tracking-widest hover:text-garage-text transition text-sm"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 py-2 bg-red-700 text-white rounded font-condensed font-bold tracking-widest hover:bg-red-600 transition text-sm"
+                >
+                  DELETE
+                </button>
+              </div>
             </div>
           </div>
         )}
