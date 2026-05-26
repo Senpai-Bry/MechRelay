@@ -18,6 +18,23 @@ router.get('/', (req, res) => {
   }
 });
 
+// GET posts by username
+router.get('/by/:username', (req, res) => {
+  try {
+    const posts = db.prepare(`
+      SELECT p.*, COUNT(r.id) as reply_count
+      FROM posts p
+      LEFT JOIN replies r ON r.post_id = p.id
+      WHERE p.user = ?
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `).all(req.params.username);
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET single post with replies
 router.get('/:id', (req, res) => {
   try {

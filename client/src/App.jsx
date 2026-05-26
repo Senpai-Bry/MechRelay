@@ -81,7 +81,7 @@ export default function App() {
   const [searchOpen, setSearchOpen]               = useState(false);
 
   // ── Auth state ────────────────────────────────────
-  const [currentUser, setCurrentUser]             = useState(null); // null = logged out
+  const [currentUser, setCurrentUser]             = useState(null);
   const [loginEmail, setLoginEmail]               = useState('');
   const [loginPassword, setLoginPassword]         = useState('');
   const [loginError, setLoginError]               = useState('');
@@ -89,7 +89,7 @@ export default function App() {
   const [signupEmail, setSignupEmail]             = useState('');
   const [signupPassword, setSignupPassword]       = useState('');
   const [signupError, setSignupError]             = useState('');
-  const [authTab, setAuthTab]                     = useState('login'); // 'login' | 'signup'
+  const [authTab, setAuthTab]                     = useState('login');
 
   // ── Edit/Delete modal state ───────────────────────
   const [showEditModal, setShowEditModal]         = useState(false);
@@ -99,6 +99,11 @@ export default function App() {
   const [editTag, setEditTag]                     = useState('');
   const [editError, setEditError]                 = useState('');
   const [deletingPostId, setDeletingPostId]       = useState(null);
+
+  // ── Viewed user profile ───────────────────────────
+  const [viewingUser, setViewingUser]                 = useState(null);
+  const [viewingUserPosts, setViewingUserPosts]       = useState([]);
+  const [viewingUserLoading, setViewingUserLoading]   = useState(false);
 
   // ── Load posts from API and merge with seed posts ──
   const fetchPosts = async () => {
@@ -131,6 +136,18 @@ export default function App() {
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // ── Restore session from localStorage on page load ──
+  useEffect(() => {
+    const saved = localStorage.getItem('mechrelay_user');
+    if (saved) {
+      try {
+        setCurrentUser(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem('mechrelay_user');
+      }
+    }
   }, []);
 
   // ── When a thread is opened, load full post with replies ──
@@ -222,7 +239,9 @@ export default function App() {
       });
       const data = await res.json();
       if (!res.ok) { setLoginError(data.error || 'Login failed.'); return; }
-      setCurrentUser({ username: data.username, token: data.token });
+      const user = { username: data.username, token: data.token };
+      setCurrentUser(user);
+      localStorage.setItem('mechrelay_user', JSON.stringify(user));
       setLoginEmail('');
       setLoginPassword('');
       navigateTo('profile');
@@ -246,7 +265,9 @@ export default function App() {
       });
       const data = await res.json();
       if (!res.ok) { setSignupError(data.error || 'Sign up failed.'); return; }
-      setCurrentUser({ username: data.username, token: data.token });
+      const user = { username: data.username, token: data.token };
+      setCurrentUser(user);
+      localStorage.setItem('mechrelay_user', JSON.stringify(user));
       setSignupUsername('');
       setSignupEmail('');
       setSignupPassword('');
@@ -259,7 +280,25 @@ export default function App() {
   // ── Auth: Logout ──────────────────────────────────
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('mechrelay_user');
     navigateTo('home');
+  };
+
+  // ── View another user's profile ───────────────────
+  const handleViewUser = async (username) => {
+    setViewingUser(username);
+    setViewingUserPosts([]);
+    setViewingUserLoading(true);
+    navigateTo('user-profile');
+    try {
+      const res  = await fetch(`${API}/posts/by/${username}`);
+      const data = await res.json();
+      setViewingUserPosts(data);
+    } catch {
+      setViewingUserPosts([]);
+    } finally {
+      setViewingUserLoading(false);
+    }
   };
 
   // ── Edit post ─────────────────────────────────────
@@ -363,7 +402,6 @@ export default function App() {
     setMenuOpen(false);
   };
 
-  // Posts that belong to the logged-in user (API posts only, not seeds)
   const myPosts = currentUser
     ? posts.filter(p => !String(p.id).startsWith('seed-') && p.user === currentUser.username)
     : [];
@@ -380,7 +418,6 @@ export default function App() {
       >
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
 
-          {/* Logo */}
           <button onClick={() => navigateTo('home')} className="flex items-center gap-2 cursor-pointer">
             <MechRelayLogo size={48} />
             <span className="font-condensed font-extrabold text-xl tracking-wide text-garage-text">
@@ -388,7 +425,6 @@ export default function App() {
             </span>
           </button>
 
-          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-8">
             {['Home', 'How It Works', 'Community', 'About'].map((item) => (
               <a
@@ -406,7 +442,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-3">
             <div
               className={`flex items-center gap-2 border border-garage-border rounded transition-all duration-300 ${searchOpen ? 'w-52 px-3 py-2' : 'w-9 h-9 p-0'}`}
@@ -448,7 +483,6 @@ export default function App() {
             )}
           </div>
 
-          {/* Mobile Hamburger */}
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
             className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
@@ -460,7 +494,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="border-t border-garage-border px-6 py-4 space-y-3" style={{ backgroundColor: '#1A2535' }}>
             <div className="flex items-center gap-2 border border-garage-border rounded px-3 py-2" style={{ backgroundColor: '#0F1923' }}>
@@ -566,6 +599,7 @@ export default function App() {
             setActivePostId={handleSetActivePostId}
             onNewPost={() => navigateTo('post')}
             onAddReply={handleAddReply}
+            onViewUser={handleViewUser}
           />
         )}
 
@@ -581,7 +615,6 @@ export default function App() {
                 Mech<span className="text-garage-gold">Relay</span>
               </h2>
 
-              {/* Tab switcher */}
               <div className="flex border border-garage-border rounded overflow-hidden mb-6">
                 <button
                   onClick={() => { setAuthTab('login'); setLoginError(''); setSignupError(''); }}
@@ -659,7 +692,7 @@ export default function App() {
           </section>
         )}
 
-        {/* ── PROFILE PAGE ── */}
+        {/* ── MY PROFILE PAGE ── */}
         {activePage === 'profile' && (
           <section className="max-w-3xl mx-auto px-6 py-12">
             {!currentUser ? (
@@ -674,7 +707,6 @@ export default function App() {
               </div>
             ) : (
               <>
-                {/* Profile header */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="font-condensed font-extrabold text-3xl text-garage-text tracking-wide">
@@ -690,7 +722,6 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* My Posts */}
                 <h3 className="font-condensed font-bold text-lg text-garage-text tracking-wide mb-4 uppercase">
                   My Posts
                 </h3>
@@ -715,9 +746,7 @@ export default function App() {
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <span className="text-xs text-garage-gold font-condensed font-bold uppercase tracking-wider">
-                              {post.tag}
-                            </span>
+                            <span className="text-xs text-garage-gold font-condensed font-bold uppercase tracking-wider">{post.tag}</span>
                             <p className="text-garage-text text-sm mt-1 leading-relaxed">{post.question}</p>
                             <p className="text-garage-muted text-xs mt-2">
                               {post.time} · {post.reply_count ?? 0} {post.reply_count === 1 ? 'reply' : 'replies'}
@@ -744,6 +773,73 @@ export default function App() {
                 )}
               </>
             )}
+          </section>
+        )}
+
+        {/* ── USER PROFILE PAGE (read-only) ── */}
+        {activePage === 'user-profile' && viewingUser && (
+          <section className="max-w-3xl mx-auto px-6 py-12">
+
+            <button
+              onClick={() => navigateTo('community')}
+              className="flex items-center gap-2 text-garage-muted hover:text-garage-text transition text-sm mb-8 group"
+            >
+              <span className="group-hover:-translate-x-1 transition-transform">←</span>
+              Back to Community
+            </button>
+
+            <div className="flex items-center gap-4 mb-8 p-6 border border-garage-border rounded" style={{ backgroundColor: '#1A2535' }}>
+              <div className="w-16 h-16 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-2xl shrink-0">
+                {viewingUser[0].toUpperCase()}
+              </div>
+              <div>
+                <h2 className="font-condensed font-extrabold text-3xl text-garage-text tracking-wide">
+                  {viewingUser}
+                </h2>
+                <p className="text-garage-muted text-sm mt-1">
+                  {viewingUserLoading ? '...' : `${viewingUserPosts.length} post${viewingUserPosts.length !== 1 ? 's' : ''}`}
+                </p>
+              </div>
+            </div>
+
+            <h3 className="font-condensed font-bold text-lg text-garage-text tracking-wide mb-4 uppercase">
+              Posts by {viewingUser}
+            </h3>
+
+            {viewingUserLoading ? (
+              <div className="text-center py-12">
+                <p className="text-garage-muted text-sm">Loading posts...</p>
+              </div>
+            ) : viewingUserPosts.length === 0 ? (
+              <div className="border border-garage-border rounded p-8 text-center" style={{ backgroundColor: '#1A2535' }}>
+                <p className="text-garage-muted text-sm">No posts yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {viewingUserPosts.map(post => (
+                  <div
+                    key={post.id}
+                    onClick={() => { handleSetActivePostId(post.id); navigateTo('community'); }}
+                    className="border border-garage-border rounded p-5 cursor-pointer hover:border-garage-gold transition group"
+                    style={{ backgroundColor: '#1A2535' }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-garage-gold font-condensed font-bold uppercase tracking-wider">{post.tag}</span>
+                        <p className="text-garage-text text-sm mt-1 leading-relaxed">{post.question}</p>
+                        <p className="text-garage-muted text-xs mt-2">
+                          {post.time} · {post.reply_count ?? 0} {post.reply_count === 1 ? 'reply' : 'replies'}
+                        </p>
+                      </div>
+                      <span className="text-xs text-garage-gold opacity-0 group-hover:opacity-100 transition font-condensed font-bold tracking-wider shrink-0">
+                        VIEW →
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
           </section>
         )}
 
