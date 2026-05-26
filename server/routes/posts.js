@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const verifyToken = require('../middleware/auth');
 
 // GET all posts
 router.get('/', (req, res) => {
@@ -79,13 +80,14 @@ router.post('/:id/replies', (req, res) => {
   }
 });
 
-// PUT (edit) a post
-router.put('/:id', (req, res) => {
+// PUT (edit) a post — requires valid token + ownership
+router.put('/:id', verifyToken, (req, res) => {
   try {
     const { question, tag } = req.body;
     if (!question) return res.status(400).json({ error: 'Question is required' });
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.user !== req.user.username) return res.status(403).json({ error: 'You can only edit your own posts.' });
     db.prepare('UPDATE posts SET question = ?, tag = ? WHERE id = ?')
       .run(question, tag || post.tag, req.params.id);
     const updated = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
@@ -95,11 +97,12 @@ router.put('/:id', (req, res) => {
   }
 });
 
-// DELETE a post (also deletes its replies)
-router.delete('/:id', (req, res) => {
+// DELETE a post — requires valid token + ownership
+router.delete('/:id', verifyToken, (req, res) => {
   try {
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.user !== req.user.username) return res.status(403).json({ error: 'You can only delete your own posts.' });
     db.prepare('DELETE FROM replies WHERE post_id = ?').run(req.params.id);
     db.prepare('DELETE FROM posts WHERE id = ?').run(req.params.id);
     res.json({ success: true });
