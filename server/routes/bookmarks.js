@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const verifyToken = require('../middleware/auth');
 
 // GET all bookmarks for a user
 router.get('/:user', (req, res) => {
@@ -14,11 +15,12 @@ router.get('/:user', (req, res) => {
   }
 });
 
-// POST a new bookmark
-router.post('/', (req, res) => {
+// POST a new bookmark — requires valid token; owner is always the logged-in user
+router.post('/', verifyToken, (req, res) => {
   try {
-    const { user, type, post_id, saved_username } = req.body;
-    if (!user || !type) return res.status(400).json({ error: 'user and type are required' });
+    const { type, post_id, saved_username } = req.body;
+    const user = req.user.username;
+    if (!type) return res.status(400).json({ error: 'type is required' });
 
     // Prevent duplicates
     const existing = db.prepare(
@@ -36,9 +38,12 @@ router.post('/', (req, res) => {
   }
 });
 
-// DELETE a bookmark
-router.delete('/:id', (req, res) => {
+// DELETE a bookmark — requires valid token + ownership
+router.delete('/:id', verifyToken, (req, res) => {
   try {
+    const bookmark = db.prepare('SELECT * FROM bookmarks WHERE id = ?').get(req.params.id);
+    if (!bookmark) return res.status(404).json({ error: 'Bookmark not found' });
+    if (bookmark.user !== req.user.username) return res.status(403).json({ error: 'You can only delete your own bookmarks.' });
     db.prepare('DELETE FROM bookmarks WHERE id = ?').run(req.params.id);
     res.json({ success: true });
   } catch (err) {

@@ -151,7 +151,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
 
           {/* Original post */}
           <div className="p-6 bg-garage-surface border-l-4 border-garage-gold border rounded mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between flex-wrap gap-y-2 mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0">
                   {activePost.user[0]}
@@ -233,7 +233,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
   return (
     <div className="min-h-screen bg-garage-bg">
 
-      <section className="relative overflow-hidden py-20 text-center border-b border-garage-border">
+      <section className="relative overflow-hidden py-12 sm:py-20 text-center border-b border-garage-border">
         <div className="absolute inset-0 hero-grid pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto px-6">
           <h1
@@ -272,7 +272,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
               onClick={() => setActivePostId(post.id)}
               className="p-6 bg-garage-surface border-l-4 border-garage-gold border rounded hover:bg-garage-surface2 transition-colors cursor-pointer group"
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between flex-wrap gap-y-2 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-garage-gold flex items-center justify-center text-garage-bg font-condensed font-extrabold text-sm shrink-0">
                     {post.user[0]}
@@ -301,7 +301,7 @@ export default function Community({ posts, activePostId, setActivePostId, onNewP
                     ✦ AI ASSIST
                   </span>
                 </div>
-                <span className="text-xs text-garage-gold opacity-0 group-hover:opacity-100 transition-opacity font-condensed font-bold tracking-wider">
+                <span className="text-xs text-garage-gold opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity font-condensed font-bold tracking-wider">
                   VIEW THREAD →
                 </span>
               </div>

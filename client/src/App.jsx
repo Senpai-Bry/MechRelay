@@ -5,6 +5,7 @@ import WhyMechRelay from "./pages/WhyMechRelay";
 import HowItWorks from "./pages/HowItWorks";
 import Community from "./pages/Community";
 import Post from "./pages/Post";
+import UserPanel from "./pages/UserPanel";
 
 const API = 'http://localhost:5000/api';
 
@@ -104,6 +105,11 @@ export default function App() {
   const [viewingUser, setViewingUser]             = useState(null);
   const [viewingUserPosts, setViewingUserPosts]   = useState([]);
   const [viewingUserLoading, setViewingUserLoading] = useState(false);
+  const [showUserPanel, setShowUserPanel]         = useState(false);
+
+  // ── Saved techs (bookmarks) ───────────────────────
+  const [savedTechs, setSavedTechs]               = useState([]);
+  const [savedTechsLoading, setSavedTechsLoading] = useState(false);
 
   // ── Profile tab ───────────────────────────────────
   const [profileTab, setProfileTab]               = useState('posts');
@@ -144,6 +150,50 @@ export default function App() {
     }
   };
 
+  // ── Load saved techs (bookmarks) ──────────────────
+  const fetchSavedTechs = async (username) => {
+    setSavedTechsLoading(true);
+    try {
+      const res  = await fetch(`${API}/bookmarks/${username}`);
+      const data = await res.json();
+      setSavedTechs(data.filter(b => b.type === 'user'));
+    } catch {
+      setSavedTechs([]);
+    } finally {
+      setSavedTechsLoading(false);
+    }
+  };
+
+  // ── Toggle save/unsave a tech ──────────────────────
+  const handleToggleSave = async (username) => {
+    if (!currentUser) { navigateTo('login'); return; }
+    const existing = savedTechs.find(b => b.saved_username === username);
+    try {
+      if (existing) {
+        const res = await fetch(`${API}/bookmarks/${existing.id}`, {
+          method:  'DELETE',
+          headers: { 'Authorization': `Bearer ${currentUser.token}` },
+        });
+        if (!res.ok) return;
+        setSavedTechs(prev => prev.filter(b => b.id !== existing.id));
+      } else {
+        const res  = await fetch(`${API}/bookmarks`, {
+          method:  'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${currentUser.token}`,
+          },
+          body:    JSON.stringify({ type: 'user', saved_username: username }),
+        });
+        if (!res.ok) return;
+        const saved = await res.json();
+        setSavedTechs(prev => [saved, ...prev]);
+      }
+    } catch (err) {
+      console.error('Failed to toggle saved tech:', err);
+    }
+  };
+
   useEffect(() => { fetchPosts(); }, []);
 
   useEffect(() => {
@@ -156,6 +206,7 @@ export default function App() {
         setShowDeleteConfirm(false);
         setFabOpen(false);
         setJobFormOpen(false);
+        setShowUserPanel(false);
       }
     };
     window.addEventListener('keydown', handleEsc);
@@ -180,6 +231,15 @@ export default function App() {
       fetchJobLogs(currentUser.username);
     }
   }, [profileTab, currentUser]);
+
+  // ── Load saved techs once a user is logged in ─────
+  useEffect(() => {
+    if (currentUser) {
+      fetchSavedTechs(currentUser.username);
+    } else {
+      setSavedTechs([]);
+    }
+  }, [currentUser]);
 
   // ── When a thread is opened ───────────────────────
   const handleSetActivePostId = async (id) => {
@@ -304,7 +364,7 @@ export default function App() {
     setViewingUser(username);
     setViewingUserPosts([]);
     setViewingUserLoading(true);
-    navigateTo('user-profile');
+    setShowUserPanel(true);
     try {
       const res  = await fetch(`${API}/posts/by/${username}`);
       const data = await res.json();
@@ -494,7 +554,11 @@ export default function App() {
                 <Search className="w-4 h-4 text-garage-muted" />
               </button>
               {searchOpen && (
-                <input autoFocus type="text" placeholder="Search..." onBlur={() => setSearchOpen(false)}
+                <input autoFocus type="text" placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { setSearchOpen(false); setShowSearchModal(true); handleSearchSubmit(); } }}
+                  onBlur={() => setSearchOpen(false)}
                   className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted"
                 />
               )}
@@ -528,6 +592,9 @@ export default function App() {
             <div className="flex items-center gap-2 border border-garage-border rounded px-3 py-2" style={{ backgroundColor: '#0F1923' }}>
               <Search className="w-4 h-4 text-garage-muted" />
               <input type="text" placeholder="Search issues, codes, or topics..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { setMenuOpen(false); setShowSearchModal(true); handleSearchSubmit(); } }}
                 className="w-full bg-transparent outline-none text-sm text-garage-text placeholder:text-garage-muted" />
             </div>
             {['Home', 'How It Works', 'Community', 'About', 'Post'].map((item) => (
@@ -707,12 +774,16 @@ export default function App() {
 
                 <div className="flex border border-garage-border rounded overflow-hidden mb-6">
                   <button onClick={() => setProfileTab('posts')}
-                    className={`flex-1 py-2.5 text-sm font-condensed font-bold tracking-widest transition ${profileTab === 'posts' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}>
+                    className={`flex-1 py-2 sm:py-2.5 px-1 text-xs sm:text-sm font-condensed font-bold tracking-wide sm:tracking-widest transition ${profileTab === 'posts' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}>
                     MY POSTS
                   </button>
                   <button onClick={() => setProfileTab('joblog')}
-                    className={`flex-1 py-2.5 text-sm font-condensed font-bold tracking-widest transition ${profileTab === 'joblog' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}>
+                    className={`flex-1 py-2 sm:py-2.5 px-1 text-xs sm:text-sm font-condensed font-bold tracking-wide sm:tracking-widest transition ${profileTab === 'joblog' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}>
                     JOB LOG
+                  </button>
+                  <button onClick={() => setProfileTab('saved')}
+                    className={`flex-1 py-2 sm:py-2.5 px-1 text-xs sm:text-sm font-condensed font-bold tracking-wide sm:tracking-widest transition ${profileTab === 'saved' ? 'bg-garage-gold text-garage-bg' : 'text-garage-muted hover:text-garage-text'}`}>
+                    SAVED TECHS
                   </button>
                 </div>
 
@@ -829,6 +900,38 @@ export default function App() {
                                 DELETE
                               </button>
                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {profileTab === 'saved' && (
+                  <div>
+                    <h3 className="font-condensed font-bold text-lg text-garage-text tracking-wide mb-4 uppercase">Saved Techs</h3>
+                    {savedTechsLoading ? (
+                      <p className="text-garage-muted text-sm text-center py-8">Loading...</p>
+                    ) : savedTechs.length === 0 ? (
+                      <div className="border border-garage-border rounded p-8 text-center" style={{ backgroundColor: '#1A2535' }}>
+                        <p className="text-garage-muted text-sm">You haven't saved any techs yet. Tap "Save This Tech" on a mechanic's profile to add them here.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {savedTechs.map(b => (
+                          <div key={b.id} onClick={() => handleViewUser(b.saved_username)}
+                            className="flex items-center justify-between border border-garage-border rounded p-4 cursor-pointer hover:border-garage-gold transition"
+                            style={{ backgroundColor: '#1A2535' }}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full flex items-center justify-center border-2 border-garage-gold font-condensed font-extrabold text-garage-bg shrink-0" style={{ backgroundColor: '#C9A84C' }}>
+                                {b.saved_username?.[0]?.toUpperCase() ?? '?'}
+                              </div>
+                              <span className="text-garage-text text-sm font-semibold">@{b.saved_username}</span>
+                            </div>
+                            <button onClick={(e) => { e.stopPropagation(); handleToggleSave(b.saved_username); }}
+                              className="text-xs text-red-400 border border-red-800 px-2 py-1 rounded hover:bg-red-900/30 transition font-condensed font-bold tracking-wider shrink-0">
+                              REMOVE
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -1039,6 +1142,17 @@ export default function App() {
             </div>
           </div>
         )}
+
+      {/* ── USER PANEL (slide-in mechanic profile) ── */}
+      {showUserPanel && viewingUser && (
+        <UserPanel
+          username={viewingUser}
+          onClose={() => setShowUserPanel(false)}
+          onViewFullProfile={(username) => navigateTo('user-profile')}
+          savedTechs={savedTechs.map(b => b.saved_username)}
+          onToggleSave={handleToggleSave}
+        />
+      )}
 
       </main>
 

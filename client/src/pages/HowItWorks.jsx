@@ -32,7 +32,7 @@ export default function HowItWorks() {
     <div className="min-h-screen bg-garage-bg">
 
       {/* PAGE HEADER — matches hero style */}
-      <section className="relative overflow-hidden py-20 text-center border-b border-garage-border">
+      <section className="relative overflow-hidden py-12 sm:py-20 text-center border-b border-garage-border">
         <div className="absolute inset-0 hero-grid pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto px-6">
           <h1 className="font-condensed font-extrabold text-garage-text leading-none tracking-tight"
