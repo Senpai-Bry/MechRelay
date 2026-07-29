@@ -48,6 +48,9 @@ app.use('/api/joblog', joblogRouter);
 const bookmarksRouter = require('./routes/bookmarks');
 app.use('/api/bookmarks', bookmarksRouter);
 
+const usersRouter = require('./routes/users');
+app.use('/api/users', usersRouter);
+
 app.listen(PORT, () => {
   console.log(`MechRelay server running on http://localhost:${PORT}`);
 });

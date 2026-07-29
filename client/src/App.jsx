@@ -520,6 +520,11 @@ export default function App() {
   const TAG_OPTIONS = ['Engine', 'Brakes', 'Transmission', 'Electrical', 'AC', 'Suspension', 'Exhaust', 'General', 'Other'];
   const STATUS_OPTIONS = ['completed', 'in-progress', 'pending'];
 
+  // Every page the main content area knows how to render.
+  // Anything else (bad activePage value, or 'user-profile' with no viewingUser) falls through to the not-found block below.
+  const KNOWN_PAGES = ['home', 'how-it-works', 'about', 'community', 'post', 'login', 'profile', 'user-profile'];
+  const isUnknownPage = !KNOWN_PAGES.includes(activePage) || (activePage === 'user-profile' && !viewingUser);
+
   return (
     <div className="min-h-screen flex flex-col bg-garage-bg font-body">
 
@@ -988,6 +993,21 @@ export default function App() {
                 ))}
               </div>
             )}
+          </section>
+        )}
+
+        {/* ── NOT FOUND (fallback for any unrecognized page state) ── */}
+        {isUnknownPage && (
+          <section className="max-w-xl mx-auto px-6 py-24 text-center">
+            <p className="font-condensed font-extrabold text-6xl text-garage-gold tracking-wide mb-4">404</p>
+            <h2 className="font-condensed font-bold text-xl text-garage-text tracking-wide mb-2 uppercase">Page not found</h2>
+            <p className="text-garage-muted text-sm mb-8">
+              That page doesn't exist, or the mechanic you're looking for couldn't be found.
+            </p>
+            <button onClick={() => navigateTo('home')}
+              className="px-6 py-2.5 bg-garage-gold text-garage-bg font-condensed font-bold tracking-widest rounded hover:bg-garage-gold-hover transition">
+              BACK TO HOME
+            </button>
           </section>
         )}
 

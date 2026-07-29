@@ -1,51 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Mock data lookup — in production this would be a fetch to /api/users/:username
-const MOCK_USER_DATA = {
-  TorqueWrench_T: {
-    specialties: ["Engine", "Diagnostics"],
-    yearsExp: "11–20 years",
-    location: "Dallas, TX",
-    endorsements: 31,
-    helpfulVotes: 18,
-    postCount: 12,
-    badges: [
-      { id: "wrench-master", name: "Wrench Master", tier: "gold" },
-      { id: "old-school",    name: "Old School",    tier: "silver" },
-    ],
-  },
-  ShopFloor_Sal: {
-    specialties: ["Brakes", "Suspension"],
-    yearsExp: "6–10 years",
-    location: "Phoenix, AZ",
-    endorsements: 19,
-    helpfulVotes: 11,
-    postCount: 8,
-    badges: [
-      { id: "first-post", name: "First Post", tier: "bronze" },
-    ],
-  },
-  GarageKing_88: {
-    specialties: ["Electrical", "Hybrid / EV"],
-    yearsExp: "6–10 years",
-    location: "Austin, TX",
-    endorsements: 14,
-    helpfulVotes: 9,
-    postCount: 6,
-    badges: [
-      { id: "diagnostic-pro", name: "Diagnostic Pro", tier: "gold" },
-    ],
-  },
-  MechDave_99: {
-    specialties: ["Transmission", "Engine"],
-    yearsExp: "3–5 years",
-    location: "Denver, CO",
-    endorsements: 7,
-    helpfulVotes: 5,
-    postCount: 4,
-    badges: [],
-  },
-};
+const API = "http://localhost:5000/api";
 
 const TIER_COLORS = {
   platinum: "#C0C0E0",
@@ -67,15 +22,8 @@ function MiniAvatar({ username, size = 56 }) {
 
 export default function UserPanel({ username, onClose, onViewFullProfile, savedTechs, onToggleSave }) {
   const [visible, setVisible] = useState(false);
-  const data = MOCK_USER_DATA[username] ?? {
-    specialties: [],
-    yearsExp: "Unknown",
-    location: null,
-    endorsements: 0,
-    helpfulVotes: 0,
-    postCount: 0,
-    badges: [],
-  };
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const isSaved = savedTechs?.includes(username);
 
@@ -85,10 +33,25 @@ export default function UserPanel({ username, onClose, onViewFullProfile, savedT
     return () => clearTimeout(t);
   }, []);
 
+  // Load real profile data for this user
+  useEffect(() => {
+    if (!username) return;
+    setLoading(true);
+    fetch(`${API}/users/${username}`)
+      .then(res => res.ok ? res.json() : { username, postCount: 0, badges: [], memberSince: null })
+      .then(json => setData(json))
+      .catch(() => setData({ username, postCount: 0, badges: [], memberSince: null }))
+      .finally(() => setLoading(false));
+  }, [username]);
+
   const handleClose = () => {
     setVisible(false);
     setTimeout(onClose, 280);
   };
+
+  const memberSinceLabel = data?.memberSince
+    ? new Date(data.memberSince).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : null;
 
   return (
     <>
@@ -125,69 +88,43 @@ export default function UserPanel({ username, onClose, onViewFullProfile, savedT
             <MiniAvatar username={username} size={56} />
             <div className="flex-1 min-w-0">
               <p className="font-condensed font-extrabold text-xl text-garage-text leading-tight">@{username}</p>
-              {data.location && (
-                <p className="flex items-center gap-1 text-xs text-garage-muted mt-0.5">
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1C4.07 1 2.5 2.57 2.5 4.5C2.5 7.25 6 11 6 11S9.5 7.25 9.5 4.5C9.5 2.57 7.93 1 6 1ZM6 6C5.17 6 4.5 5.33 4.5 4.5S5.17 3 6 3 7.5 3.67 7.5 4.5 6.83 6 6 6Z" fill="currentColor"/></svg>
-                  {data.location}
-                </p>
+              {memberSinceLabel && (
+                <p className="text-xs text-garage-muted mt-0.5">Member since {memberSinceLabel}</p>
               )}
-              <p className="text-xs text-garage-muted mt-0.5">{data.yearsExp} experience</p>
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: "Endorsed",  value: data.endorsements },
-              { label: "Helpful",   value: data.helpfulVotes },
-              { label: "Posts",     value: data.postCount    },
-            ].map(s => (
-              <div key={s.label} className="text-center py-3 rounded border border-garage-border" style={{ backgroundColor: "#0F1923" }}>
-                <p className="font-condensed font-extrabold text-xl text-garage-gold">{s.value}</p>
-                <p className="text-[10px] font-condensed tracking-widest uppercase text-garage-muted mt-0.5">{s.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Specialties */}
-          {data.specialties.length > 0 && (
-            <div>
-              <p className="text-[10px] font-condensed font-bold tracking-widest uppercase text-garage-gold mb-2">Specialties</p>
-              <div className="flex flex-wrap gap-1.5">
-                {data.specialties.map(s => (
-                  <span key={s} className="px-2.5 py-1 rounded text-xs font-condensed font-bold tracking-widest uppercase border border-garage-gold text-garage-gold" style={{ backgroundColor: "#C9A84C15" }}>
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Badges */}
-          {data.badges.length > 0 && (
-            <div>
-              <p className="text-[10px] font-condensed font-bold tracking-widest uppercase text-garage-gold mb-2">Badges</p>
-              <div className="flex flex-wrap gap-2">
-                {data.badges.map(b => (
-                  <div key={b.id} className="flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-condensed font-bold" style={{ borderColor: TIER_COLORS[b.tier], backgroundColor: TIER_COLORS[b.tier] + "18", color: TIER_COLORS[b.tier] }}>
-                    <span className="uppercase tracking-widest">{b.name}</span>
+          {loading ? (
+            <p className="text-xs text-garage-muted">Loading profile…</p>
+          ) : (
+            <>
+              {/* Stats row */}
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Posts",  value: data?.postCount ?? 0 },
+                  { label: "Badges", value: data?.badges?.length ?? 0 },
+                ].map(s => (
+                  <div key={s.label} className="text-center py-3 rounded border border-garage-border" style={{ backgroundColor: "#0F1923" }}>
+                    <p className="font-condensed font-extrabold text-xl text-garage-gold">{s.value}</p>
+                    <p className="text-[10px] font-condensed tracking-widest uppercase text-garage-muted mt-0.5">{s.label}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
 
-          {/* Endorsement bar */}
-          {data.endorsements > 0 && (
-            <div>
-              <p className="text-[10px] font-condensed font-bold tracking-widest uppercase text-garage-gold mb-2">Community Standing</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full bg-garage-border overflow-hidden">
-                  <div className="h-full rounded-full bg-garage-gold transition-all" style={{ width: `${Math.min(data.endorsements * 2.5, 100)}%` }} />
+              {/* Badges */}
+              {data?.badges?.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-condensed font-bold tracking-widest uppercase text-garage-gold mb-2">Badges</p>
+                  <div className="flex flex-wrap gap-2">
+                    {data.badges.map(b => (
+                      <div key={b.id} className="flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-condensed font-bold" style={{ borderColor: TIER_COLORS[b.tier], backgroundColor: TIER_COLORS[b.tier] + "18", color: TIER_COLORS[b.tier] }}>
+                        <span className="uppercase tracking-widest">{b.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className="text-xs font-condensed font-bold text-garage-gold shrink-0">{data.endorsements} endorsements</span>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
         </div>
